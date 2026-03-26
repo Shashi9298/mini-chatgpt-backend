@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 import requests
+import os
 
 app = FastAPI()
 
@@ -17,7 +18,7 @@ app.add_middleware(
 
 API_URL = "https://aicafe.hcl.com/AICafeService/api/v1/subscription/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview"
 
-API_KEY = "bf7e228c-a69f-4b4b-bdf5-0fe90dc5251e"
+API_KEY = os.getenv("API_KEY")
 
 
 # Message schema
