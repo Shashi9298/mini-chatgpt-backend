@@ -32,7 +32,7 @@ function App() {
         content: msg.text
       }));
 
-      const res = await fetch("http://localhost:8000/chat", {
+      const res = await fetch("https://mini-chatgpt-backend-nvjy.onrender.com/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -41,6 +41,7 @@ function App() {
       });
 
       const data = await res.json();
+      console.log(data);
       const fullText = data.reply.choices[0].message.content;
 
       // 🧠 WORD-BY-WORD STREAMING
