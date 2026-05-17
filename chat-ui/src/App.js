@@ -123,7 +123,14 @@ function App() {
       
       {/* Sidebar */}
       <div style={styles.sidebar}>
-        <div style={styles.sidebarTitle}>MiniGPT</div>
+        <div style={styles.sidebarHeader}>
+          <div style={styles.logoCircle}>AI</div>
+          <div>
+            <div style={styles.sidebarTitle}>MiniGPT</div>
+            <div style={styles.sidebarSubtitle}>Conversational AI</div>
+          </div>
+        </div>
+
         <button
           style={styles.newChatBtn}
           onClick={() => {
@@ -141,6 +148,15 @@ function App() {
         >
           + New Chat
         </button>
+
+        <div style={styles.sidebarHistory}>
+          <div style={styles.sidebarSectionTitle}>Chat History</div>
+          <div style={styles.historyPlaceholder}>
+            <div style={styles.historyPlaceholderItem}>
+              Placeholder for future chat history.
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main */}
@@ -197,31 +213,83 @@ function App() {
 const styles = {
   app: {
     display: "flex",
-    height: "100vh",
+    flexWrap: "wrap",
+    minHeight: "100vh",
     backgroundColor: "#343541",
     color: "white"
   },
   sidebar: {
-    width: "250px",
+    width: "280px",
+    minWidth: "260px",
     backgroundColor: "#202123",
-    padding: "15px",
+    padding: "20px",
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
+    gap: "20px",
+    borderRight: "1px solid #2a2b32"
+  },
+  sidebarHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    marginBottom: "10px"
+  },
+  logoCircle: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "12px",
+    backgroundColor: "#10a37f",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 700,
+    fontSize: "16px"
   },
   sidebarTitle: {
     fontSize: "18px",
-    marginBottom: "20px"
+    fontWeight: 700,
+    marginBottom: "4px"
+  },
+  sidebarSubtitle: {
+    color: "#9aa0a6",
+    fontSize: "13px"
   },
   newChatBtn: {
-    padding: "10px",
+    padding: "12px 14px",
     backgroundColor: "#343541",
     border: "1px solid #555",
     color: "white",
-    borderRadius: "5px",
-    cursor: "pointer"
+    borderRadius: "12px",
+    cursor: "pointer",
+    textAlign: "left"
+  },
+  sidebarHistory: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    marginTop: "10px"
+  },
+  sidebarSectionTitle: {
+    fontSize: "13px",
+    color: "#9aa0a6",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em"
+  },
+  historyPlaceholder: {
+    padding: "10px",
+    borderRadius: "12px",
+    backgroundColor: "#161617",
+    border: "1px solid #2f3136"
+  },
+  historyPlaceholderItem: {
+    color: "#b1b5ba",
+    fontSize: "14px",
+    lineHeight: 1.5
   },
   main: {
     flex: 1,
+    minWidth: "320px",
     display: "flex",
     flexDirection: "column"
   },
