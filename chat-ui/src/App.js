@@ -1,24 +1,53 @@
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 
 function App() {
-  const [input, setInput] = useState("");
-  const [chat, setChat] = useState(() => {
-    // Load persisted chat history from localStorage once on initial render
-    try {
-      const saved = localStorage.getItem("chat_messages");
-      return saved ? JSON.parse(saved) : [];
-    } catch (err) {
-      return [];
-    }
+  const createSession = (title = "New Chat", messages = []) => ({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    title,
+    messages,
+    createdAt: new Date().toISOString()
   });
+
+  const getSessionTitle = (messages) => {
+    const firstUser = messages.find((msg) => msg.role === "user" && msg.text?.trim());
+    return firstUser?.text?.slice(0, 20) || "New Chat";
+  };
+
+  const loadSessions = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("chat_sessions") || "null");
+      if (stored?.sessions?.length) {
+        return {
+          sessions: stored.sessions,
+          activeChatId: stored.activeChatId || stored.sessions[0].id
+        };
+      }
+
+      const oldChat = JSON.parse(localStorage.getItem("chat_messages") || "null");
+      if (Array.isArray(oldChat)) {
+        const session = createSession(getSessionTitle(oldChat), oldChat);
+        return { sessions: [session], activeChatId: session.id };
+      }
+    } catch (err) {
+      // fall back to a fresh session
+    }
+
+    const session = createSession();
+    return { sessions: [session], activeChatId: session.id };
+  };
+
+  const initialData = loadSessions();
+  const [sessions, setSessions] = useState(initialData.sessions);
+  const [activeChatId, setActiveChatId] = useState(initialData.activeChatId);
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
   const streamIntervalRef = useRef(null);
-  const chatRef = useRef(chat);
+  const chatRef = useRef([]);
   const shouldAutoScrollRef = useRef(true);
 
   const scrollToBottom = () => {
@@ -38,6 +67,12 @@ function App() {
     });
   };
 
+  const activeSession = useMemo(
+    () => sessions.find((session) => session.id === activeChatId) || sessions[0],
+    [sessions, activeChatId]
+  );
+  const chat = useMemo(() => activeSession?.messages || [], [activeSession]);
+
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
@@ -50,9 +85,26 @@ function App() {
 
     const userMessage = { role: "user", text: input };
     const apiMessages = [...chatRef.current, userMessage];
-    setChat(prev => [...prev, userMessage, { role: "bot", text: "Typing..." }]);
+    setSessions((prev) =>
+      prev.map((session) => {
+        if (session.id !== activeChatId) return session;
+        const updatedMessages = [
+          ...session.messages,
+          userMessage,
+          { role: "bot", text: "Typing..." }
+        ];
+        return {
+          ...session,
+          messages: updatedMessages,
+          title:
+            session.messages.length === 0
+              ? getSessionTitle([userMessage])
+              : session.title
+        };
+      })
+    );
 
-    const messages = apiMessages.map(msg => ({
+    const messages = apiMessages.map((msg) => ({
       role: msg.role === "bot" ? "assistant" : "user",
       content: msg.text
     }));
@@ -67,30 +119,46 @@ function App() {
       });
 
       const data = await res.json();
-      const fullText = data.reply.choices[0].message.content;
+      let fullText = "";
+
+      if (!res.ok) {
+        const errorText = data?.reply?.message || data?.message || res.statusText || "API request failed.";
+        fullText = `⚠️ API error: ${errorText}`;
+      } else if (typeof data?.reply?.choices?.[0]?.message?.content === "string") {
+        fullText = data.reply.choices[0].message.content;
+      } else {
+        const errorText = data?.reply?.message || data?.message || "Unexpected response format.";
+        fullText = `⚠️ API error: ${errorText}`;
+      }
 
       // 🧠 WORD-BY-WORD STREAMING
       const words = fullText.split(" ");
       let index = 0;
 
       // Replace "Typing..." with empty first
-      setChat(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { role: "bot", text: "" };
-        return updated;
-      });
+      setSessions((prev) =>
+        prev.map((session) => {
+          if (session.id !== activeChatId) return session;
+          const updated = [...session.messages];
+          updated[updated.length - 1] = { role: "bot", text: "" };
+          return { ...session, messages: updated };
+        })
+      );
 
       streamIntervalRef.current = setInterval(() => {
         index++;
 
-        setChat(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "bot",
-            text: words.slice(0, index).join(" ")
-          };
-          return updated;
-        });
+        setSessions((prev) =>
+          prev.map((session) => {
+            if (session.id !== activeChatId) return session;
+            const updated = [...session.messages];
+            updated[updated.length - 1] = {
+              role: "bot",
+              text: words.slice(0, index).join(" ")
+            };
+            return { ...session, messages: updated };
+          })
+        );
 
         if (index >= words.length) {
           clearInterval(streamIntervalRef.current);
@@ -99,18 +167,22 @@ function App() {
       }, 50); // ⏱️ speed (60–120 ideal)
 
     } catch (error) {
+      console.error("sendMessage caught error", error);
       if (streamIntervalRef.current) {
         clearInterval(streamIntervalRef.current);
         streamIntervalRef.current = null;
       }
-      setChat(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          role: "bot",
-          text: "⚠️ Error occurred"
-        };
-        return updated;
-      });
+      setSessions((prev) =>
+        prev.map((session) => {
+          if (session.id !== activeChatId) return session;
+          const updated = [...session.messages];
+          updated[updated.length - 1] = {
+            role: "bot",
+            text: "⚠️ Error occurred"
+          };
+          return { ...session, messages: updated };
+        })
+      );
     }
 
     setInput("");
@@ -138,10 +210,13 @@ function App() {
     chatRef.current = chat;
   }, [chat]);
 
-  // Persist chat history to localStorage whenever chat changes
+  // Persist chat sessions to localStorage whenever sessions or active chat changes
   useEffect(() => {
-    localStorage.setItem("chat_messages", JSON.stringify(chat));
-  }, [chat]);
+    localStorage.setItem(
+      "chat_sessions",
+      JSON.stringify({ sessions, activeChatId })
+    );
+  }, [sessions, activeChatId]);
 
   // Auto focus
   useEffect(() => {
@@ -168,9 +243,9 @@ function App() {
               clearInterval(streamIntervalRef.current);
               streamIntervalRef.current = null;
             }
-            // Clear persisted chat history and in-memory state
-            localStorage.removeItem("chat_messages");
-            setChat([]);
+            const session = createSession();
+            setSessions((prev) => [...prev, session]);
+            setActiveChatId(session.id);
             chatRef.current = [];
             shouldAutoScrollRef.current = true;
             setInput("");
@@ -182,11 +257,24 @@ function App() {
 
         <div style={styles.sidebarHistory}>
           <div style={styles.sidebarSectionTitle}>Chat History</div>
-          <div style={styles.historyPlaceholder}>
-            <div style={styles.historyPlaceholderItem}>
-              Placeholder for future chat history.
-            </div>
-          </div>
+          {sessions.map((session) => (
+            <button
+              key={session.id}
+              style={{
+                ...styles.sessionItem,
+                ...(session.id === activeChatId ? styles.sessionItemActive : {})
+              }}
+              onClick={() => {
+                setActiveChatId(session.id);
+                shouldAutoScrollRef.current = true;
+              }}
+            >
+              <div style={styles.sessionItemTitle}>{session.title}</div>
+              <div style={styles.sessionItemSubtitle}>
+                {new Date(session.createdAt).toLocaleString()}
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -310,6 +398,35 @@ const styles = {
     color: "#9aa0a6",
     textTransform: "uppercase",
     letterSpacing: "0.08em"
+  },
+  sessionItem: {
+    width: "100%",
+    textAlign: "left",
+    padding: "12px",
+    borderRadius: "12px",
+    backgroundColor: "#17181b",
+    border: "1px solid transparent",
+    color: "white",
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px"
+  },
+  sessionItemActive: {
+    borderColor: "#10a37f",
+    backgroundColor: "#202123"
+  },
+  sessionItemTitle: {
+    fontSize: "14px",
+    fontWeight: 600,
+    lineHeight: 1.3,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis"
+  },
+  sessionItemSubtitle: {
+    fontSize: "12px",
+    color: "#8c9299"
   },
   historyPlaceholder: {
     padding: "10px",
