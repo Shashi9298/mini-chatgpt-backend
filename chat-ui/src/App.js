@@ -14,10 +14,29 @@ function App() {
   });
   const [loading, setLoading] = useState(false);
 
+  const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
   const streamIntervalRef = useRef(null);
   const chatRef = useRef(chat);
+  const shouldAutoScrollRef = useRef(true);
+
+  const scrollToBottom = () => {
+    const chatElement = chatContainerRef.current;
+    if (chatElement) {
+      chatElement.scrollTo({
+        top: chatElement.scrollHeight,
+        behavior: "smooth"
+      });
+      return;
+    }
+
+    chatEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest"
+    });
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -98,9 +117,20 @@ function App() {
     setLoading(false);
   };
 
-  // Auto scroll
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleChatScroll = () => {
+    const chatElement = chatContainerRef.current;
+    if (!chatElement) return;
+
+    const distanceFromBottom =
+      chatElement.scrollHeight - (chatElement.scrollTop + chatElement.clientHeight);
+    shouldAutoScrollRef.current = distanceFromBottom < 120;
+  };
+
+  // Auto scroll to newest message when chat updates, only when user is near bottom
+  useLayoutEffect(() => {
+    if (shouldAutoScrollRef.current) {
+      scrollToBottom();
+    }
   }, [chat]);
 
   // Keep a ref to the latest chat state, so sendMessage always uses the freshest conversation
@@ -142,6 +172,7 @@ function App() {
             localStorage.removeItem("chat_messages");
             setChat([]);
             chatRef.current = [];
+            shouldAutoScrollRef.current = true;
             setInput("");
             setLoading(false);
           }}
@@ -163,7 +194,11 @@ function App() {
       <div style={styles.main}>
 
         {/* Chat */}
-        <div style={styles.chatArea}>
+        <div
+          ref={chatContainerRef}
+          style={styles.chatArea}
+          onScroll={handleChatScroll}
+        >
           {chat.map((msg, i) => (
             <div
               key={i}
