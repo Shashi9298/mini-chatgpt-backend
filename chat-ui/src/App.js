@@ -1,37 +1,44 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
 function App() {
   const [input, setInput] = useState("");
-  const [chat, setChat] = useState([]);
+  const [chat, setChat] = useState(() => {
+    // Load persisted chat history from localStorage once on initial render
+    try {
+      const saved = localStorage.getItem("chat_messages");
+      return saved ? JSON.parse(saved) : [];
+    } catch (err) {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
 
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
+  const streamIntervalRef = useRef(null);
+  const chatRef = useRef(chat);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
 
     setLoading(true);
 
-    const userMessage = { role: "user", text: input };
+    if (streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current);
+      streamIntervalRef.current = null;
+    }
 
-    // Add user + typing placeholder
-    setChat(prev => [
-      ...prev,
-      userMessage,
-      { role: "bot", text: "Typing..." }
-    ]);
+    const userMessage = { role: "user", text: input };
+    const apiMessages = [...chatRef.current, userMessage];
+    setChat(prev => [...prev, userMessage, { role: "bot", text: "Typing..." }]);
+
+    const messages = apiMessages.map(msg => ({
+      role: msg.role === "bot" ? "assistant" : "user",
+      content: msg.text
+    }));
 
     try {
-      const messages = [
-        ...chat,
-        userMessage
-      ].map(msg => ({
-        role: msg.role === "bot" ? "assistant" : "user",
-        content: msg.text
-      }));
-
       const res = await fetch("https://mini-chatgpt-backend-nvjy.onrender.com/chat", {
         method: "POST",
         headers: {
@@ -41,7 +48,6 @@ function App() {
       });
 
       const data = await res.json();
-      console.log(data);
       const fullText = data.reply.choices[0].message.content;
 
       // 🧠 WORD-BY-WORD STREAMING
@@ -55,7 +61,7 @@ function App() {
         return updated;
       });
 
-      const interval = setInterval(() => {
+      streamIntervalRef.current = setInterval(() => {
         index++;
 
         setChat(prev => {
@@ -68,11 +74,16 @@ function App() {
         });
 
         if (index >= words.length) {
-          clearInterval(interval);
+          clearInterval(streamIntervalRef.current);
+          streamIntervalRef.current = null;
         }
       }, 50); // ⏱️ speed (60–120 ideal)
 
     } catch (error) {
+      if (streamIntervalRef.current) {
+        clearInterval(streamIntervalRef.current);
+        streamIntervalRef.current = null;
+      }
       setChat(prev => {
         const updated = [...prev];
         updated[updated.length - 1] = {
@@ -92,6 +103,16 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
+  // Keep a ref to the latest chat state, so sendMessage always uses the freshest conversation
+  useLayoutEffect(() => {
+    chatRef.current = chat;
+  }, [chat]);
+
+  // Persist chat history to localStorage whenever chat changes
+  useEffect(() => {
+    localStorage.setItem("chat_messages", JSON.stringify(chat));
+  }, [chat]);
+
   // Auto focus
   useEffect(() => {
     inputRef.current?.focus();
@@ -103,7 +124,21 @@ function App() {
       {/* Sidebar */}
       <div style={styles.sidebar}>
         <div style={styles.sidebarTitle}>MiniGPT</div>
-        <button style={styles.newChatBtn} onClick={() => setChat([])}>
+        <button
+          style={styles.newChatBtn}
+          onClick={() => {
+            if (streamIntervalRef.current) {
+              clearInterval(streamIntervalRef.current);
+              streamIntervalRef.current = null;
+            }
+            // Clear persisted chat history and in-memory state
+            localStorage.removeItem("chat_messages");
+            setChat([]);
+            chatRef.current = [];
+            setInput("");
+            setLoading(false);
+          }}
+        >
           + New Chat
         </button>
       </div>
