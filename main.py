@@ -2,8 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
-import requests
+from groq import Groq
 import os
+from dotenv import load_dotenv
+
+# load .env into environment
+load_dotenv()
 
 app = FastAPI()
 
@@ -16,9 +20,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_URL = "https://aicafe.hcl.com/AICafeService/api/v1/subscription/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview"
-
 API_KEY = os.getenv("API_KEY")
+
+# SAFE startup diagnostic (do not print the key)
+print("API key loaded:", bool(API_KEY))
+
+# Groq client (created after loading env)
+client = Groq(api_key=API_KEY)
 
 
 # Message schema
@@ -36,22 +44,14 @@ def chat(req: ChatRequest):
     try:
         print("Incoming messages:", req.messages)
 
-        response = requests.post(
-            API_URL,
-            headers={
-                "api-key": API_KEY,  # ✅ FIXED
-                "Content-Type": "application/json"
-            },
-            json={
-                "messages": [msg.model_dump() for msg in req.messages],
-                "stream": True
-            }
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[msg.model_dump() for msg in req.messages],
         )
 
-        print("API status:", response.status_code)
-        print("API response:", response.text)
+        print("API response:", response)
 
-        return {"reply": response.json()}
+        return {"reply": response}
 
     except Exception as e:
         print("ERROR:", str(e))
