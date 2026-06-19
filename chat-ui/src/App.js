@@ -45,6 +45,7 @@ function App() {
   const [activeChatId, setActiveChatId] = useState(initialData.activeChatId);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copiedCodeBlockId, setCopiedCodeBlockId] = useState(null);
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -52,6 +53,7 @@ function App() {
   const streamIntervalRef = useRef(null);
   const chatRef = useRef([]);
   const shouldAutoScrollRef = useRef(true);
+  const copyTimeoutRef = useRef(null);
 
   const scrollToBottom = () => {
     const chatElement = chatContainerRef.current;
@@ -68,6 +70,52 @@ function App() {
       block: "end",
       inline: "nearest"
     });
+  };
+
+  const renderMarkdownCode = ({ inline, className, children, ...props }) => {
+    const isFenced = !inline;
+    const codeText = String(children).replace(/\n$/, "");
+    // Use the code text as a stable identifier so re-renders keep the same id
+    const codeBlockId = codeText;
+
+    if (!isFenced) {
+      return (
+        <code className={className} {...props}>
+          {codeText}
+        </code>
+      );
+    }
+
+    return (
+      <div style={styles.codeBlockWrapper}>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(codeText);
+              setCopiedCodeBlockId(codeBlockId);
+              if (copyTimeoutRef.current) {
+                clearTimeout(copyTimeoutRef.current);
+              }
+              copyTimeoutRef.current = setTimeout(() => {
+                setCopiedCodeBlockId(null);
+                copyTimeoutRef.current = null;
+              }, 2000);
+            } catch (err) {
+              console.error("Failed to copy code block", err);
+            }
+          }}
+          style={styles.copyButton}
+        >
+          {copiedCodeBlockId === codeBlockId ? "Copied!" : "Copy"}
+        </button>
+        <pre style={styles.codeBlockPre}>
+          <code className={className} {...props}>
+            {codeText}
+          </code>
+        </pre>
+      </div>
+    );
   };
 
   const activeSession = useMemo(
@@ -242,7 +290,8 @@ function App() {
   }, []);
 
   return (
-    <div style={styles.app}>
+    <div id="app-root" style={styles.app}>
+      <style>{`#app-root pre{overflow-x:auto;max-width:100%;}#app-root pre code{white-space:pre;}`}</style>
       
       {/* Sidebar */}
       <div style={styles.sidebar}>
@@ -342,7 +391,13 @@ function App() {
                     msg.role === "user" ? "#10a37f" : "#444654"
                 }}
               >
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                {msg.role === "bot" ? (
+                  <ReactMarkdown components={{ code: renderMarkdownCode }}>
+                    {msg.text}
+                  </ReactMarkdown>
+                ) : (
+                  msg.text
+                )}
               </div>
             </div>
           ))}
@@ -519,6 +574,30 @@ const styles = {
     borderRadius: "12px",
     maxWidth: "70%",
     lineHeight: "1.5"
+  },
+  codeBlockWrapper: {
+    position: "relative",
+    marginTop: "12px"
+  },
+  codeBlockPre: {
+    overflowX: "auto",
+    maxWidth: "100%",
+    padding: "12px",
+    borderRadius: "12px",
+    backgroundColor: "#1e1f24",
+    margin: 0
+  },
+  copyButton: {
+    position: "absolute",
+    top: "8px",
+    right: "8px",
+    backgroundColor: "#343541",
+    border: "1px solid #555",
+    color: "white",
+    borderRadius: "999px",
+    padding: "6px 10px",
+    fontSize: "12px",
+    cursor: "pointer"
   },
   inputContainer: {
     padding: "15px",
