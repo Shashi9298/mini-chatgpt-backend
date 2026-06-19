@@ -6,7 +6,8 @@ function App() {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title,
     messages,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    hasCustomTitle: false
   });
 
   const getSessionTitle = (messages) => {
@@ -21,15 +22,27 @@ function App() {
     try {
       const stored = JSON.parse(localStorage.getItem("chat_sessions") || "null");
       if (stored?.sessions?.length) {
+        // Ensure backwards-compatibility: sessions missing `hasCustomTitle`
+        // should default to (session.title !== "New Chat").
+        const normalized = stored.sessions.map((s) => ({
+          ...s,
+          hasCustomTitle:
+            typeof s.hasCustomTitle === "boolean"
+              ? s.hasCustomTitle
+              : s.title !== "New Chat"
+        }));
         return {
-          sessions: stored.sessions,
-          activeChatId: stored.activeChatId || stored.sessions[0].id
+          sessions: normalized,
+          activeChatId: stored.activeChatId || normalized[0].id
         };
       }
 
       const oldChat = JSON.parse(localStorage.getItem("chat_messages") || "null");
       if (Array.isArray(oldChat)) {
         const session = createSession(getSessionTitle(oldChat), oldChat);
+        // For legacy single-chat format, consider the title custom when
+        // it isn't the default "New Chat" (backwards-compatibility).
+        session.hasCustomTitle = session.title !== "New Chat";
         return { sessions: [session], activeChatId: session.id };
       }
     } catch (err) {
@@ -150,7 +163,7 @@ function App() {
           ...session,
           messages: updatedMessages,
           title:
-            session.title === "New Chat" && session.messages.length === 0
+            session.title === "New Chat" && session.messages.length === 0 && !session.hasCustomTitle
               ? getSessionTitle([userMessage])
               : session.title
         };
@@ -276,7 +289,7 @@ function App() {
       setSessions((prev) =>
         prev.map((session) =>
           session.id === sessionId
-            ? { ...session, title: editingSessionTitle.trim() }
+            ? { ...session, title: editingSessionTitle.trim(), hasCustomTitle: true }
             : session
         )
       );
