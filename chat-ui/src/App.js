@@ -14,8 +14,8 @@ function App() {
     const firstUser = messages.find((msg) => msg.role === "user" && msg.text?.trim());
     const text = firstUser?.text?.trim();
     if (!text) return "New Chat";
-    if (text.length <= 30) return text;
-    return `${text.slice(0, 27)}...`;
+    // Return the full first user message text for auto-generated titles.
+    return text;
   };
 
   const loadSessions = () => {
@@ -399,8 +399,10 @@ function App() {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <>
-                    <div style={styles.sessionItemTitle}>{session.title}</div>
+                  <div style={styles.sessionItemTitle} title={session.title}>{session.title}</div>
+                )}
+                <div style={styles.sessionItemActions} onClick={(e) => e.stopPropagation()}>
+                  {editingSessionId !== session.id && (
                     <button
                       type="button"
                       style={styles.editBtn}
@@ -409,22 +411,24 @@ function App() {
                         handleStartEdit(session.id, session.title);
                       }}
                       aria-label={`Rename chat ${session.title}`}
+                      title={`Rename: ${session.title}`}
                     >
                       ✎
                     </button>
-                  </>
-                )}
-                <button
-                  type="button"
-                  style={styles.deleteBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteSession(session.id);
-                  }}
-                  aria-label={`Delete chat ${session.title}`}
-                >
-                  ×
-                </button>
+                  )}
+                  <button
+                    type="button"
+                    style={styles.deleteBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSession(session.id);
+                    }}
+                    aria-label={`Delete chat ${session.title}`}
+                    title={`Delete: ${session.title}`}
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
               <div style={styles.sessionItemSubtitle}>
                 {new Date(session.createdAt).toLocaleString()}
@@ -630,7 +634,17 @@ const styles = {
     lineHeight: 1.3,
     whiteSpace: "nowrap",
     overflow: "hidden",
-    textOverflow: "ellipsis"
+    textOverflow: "ellipsis",
+    flex: 1,
+    minWidth: 0
+  },
+  sessionItemActions: {
+    display: "flex",
+    gap: "6px",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    width: "70px",
+    flex: "0 0 70px"
   },
   sessionItemSubtitle: {
     fontSize: "12px",
