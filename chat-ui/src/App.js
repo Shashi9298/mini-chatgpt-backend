@@ -11,7 +11,10 @@ function App() {
 
   const getSessionTitle = (messages) => {
     const firstUser = messages.find((msg) => msg.role === "user" && msg.text?.trim());
-    return firstUser?.text?.slice(0, 20) || "New Chat";
+    const text = firstUser?.text?.trim();
+    if (!text) return "New Chat";
+    if (text.length <= 30) return text;
+    return `${text.slice(0, 27)}...`;
   };
 
   const loadSessions = () => {
@@ -97,7 +100,7 @@ function App() {
           ...session,
           messages: updatedMessages,
           title:
-            session.messages.length === 0
+            session.title === "New Chat" && session.messages.length === 0
               ? getSessionTitle([userMessage])
               : session.title
         };
@@ -189,6 +192,21 @@ function App() {
     setLoading(false);
   };
 
+  const handleDeleteSession = (sessionId) => {
+    setSessions((prev) => {
+      const remaining = prev.filter((session) => session.id !== sessionId);
+      if (remaining.length === 0) {
+        const session = createSession();
+        setActiveChatId(session.id);
+        return [session];
+      }
+      if (sessionId === activeChatId) {
+        setActiveChatId(remaining[0].id);
+      }
+      return remaining;
+    });
+  };
+
   const handleChatScroll = () => {
     const chatElement = chatContainerRef.current;
     if (!chatElement) return;
@@ -258,22 +276,43 @@ function App() {
         <div style={styles.sidebarHistory}>
           <div style={styles.sidebarSectionTitle}>Chat History</div>
           {sessions.map((session) => (
-            <button
+            <div
               key={session.id}
               style={{
                 ...styles.sessionItem,
                 ...(session.id === activeChatId ? styles.sessionItemActive : {})
               }}
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 setActiveChatId(session.id);
                 shouldAutoScrollRef.current = true;
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  setActiveChatId(session.id);
+                  shouldAutoScrollRef.current = true;
+                }
+              }}
             >
-              <div style={styles.sessionItemTitle}>{session.title}</div>
+              <div style={styles.sessionItemHeader}>
+                <div style={styles.sessionItemTitle}>{session.title}</div>
+                <button
+                  type="button"
+                  style={styles.deleteBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteSession(session.id);
+                  }}
+                  aria-label={`Delete chat ${session.title}`}
+                >
+                  ×
+                </button>
+              </div>
               <div style={styles.sessionItemSubtitle}>
                 {new Date(session.createdAt).toLocaleString()}
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -410,7 +449,28 @@ const styles = {
     cursor: "pointer",
     display: "flex",
     flexDirection: "column",
-    gap: "4px"
+    gap: "8px"
+  },
+  sessionItemHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px"
+  },
+  deleteBtn: {
+    border: "none",
+    background: "transparent",
+    color: "#9aa0a6",
+    cursor: "pointer",
+    fontSize: "18px",
+    lineHeight: 1,
+    padding: "0",
+    width: "28px",
+    height: "28px",
+    borderRadius: "999px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   },
   sessionItemActive: {
     borderColor: "#10a37f",
