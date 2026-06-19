@@ -46,6 +46,8 @@ function App() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [copiedCodeBlockId, setCopiedCodeBlockId] = useState(null);
+  const [editingSessionId, setEditingSessionId] = useState(null);
+  const [editingSessionTitle, setEditingSessionTitle] = useState("");
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -264,6 +266,30 @@ function App() {
     shouldAutoScrollRef.current = distanceFromBottom < 120;
   };
 
+  const handleStartEdit = (sessionId, currentTitle) => {
+    setEditingSessionId(sessionId);
+    setEditingSessionTitle(currentTitle);
+  };
+
+  const handleSaveEdit = (sessionId) => {
+    if (editingSessionTitle.trim()) {
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? { ...session, title: editingSessionTitle.trim() }
+            : session
+        )
+      );
+    }
+    setEditingSessionId(null);
+    setEditingSessionTitle("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSessionId(null);
+    setEditingSessionTitle("");
+  };
+
   // Auto scroll to newest message when chat updates, only when user is near bottom
   useLayoutEffect(() => {
     if (shouldAutoScrollRef.current) {
@@ -345,7 +371,36 @@ function App() {
               }}
             >
               <div style={styles.sessionItemHeader}>
-                <div style={styles.sessionItemTitle}>{session.title}</div>
+                {editingSessionId === session.id ? (
+                  <input
+                    type="text"
+                    value={editingSessionTitle}
+                    onChange={(e) => setEditingSessionTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveEdit(session.id);
+                      if (e.key === "Escape") handleCancelEdit();
+                    }}
+                    onBlur={() => handleSaveEdit(session.id)}
+                    autoFocus
+                    style={styles.editInput}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <>
+                    <div style={styles.sessionItemTitle}>{session.title}</div>
+                    <button
+                      type="button"
+                      style={styles.editBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartEdit(session.id, session.title);
+                      }}
+                      aria-label={`Rename chat ${session.title}`}
+                    >
+                      ✎
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   style={styles.deleteBtn}
@@ -526,6 +581,31 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center"
+  },
+  editBtn: {
+    border: "none",
+    background: "transparent",
+    color: "#9aa0a6",
+    cursor: "pointer",
+    fontSize: "14px",
+    lineHeight: 1,
+    padding: "0",
+    width: "24px",
+    height: "24px",
+    borderRadius: "999px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  editInput: {
+    flex: 1,
+    background: "#343541",
+    border: "1px solid #10a37f",
+    color: "white",
+    borderRadius: "6px",
+    padding: "6px 8px",
+    fontSize: "14px",
+    outline: "none"
   },
   sessionItemActive: {
     borderColor: "#10a37f",
