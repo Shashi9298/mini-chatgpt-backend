@@ -61,6 +61,7 @@ function App() {
   const [copiedCodeBlockId, setCopiedCodeBlockId] = useState(null);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
+  const [typingChatId, setTypingChatId] = useState(null);
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -133,6 +134,18 @@ function App() {
     );
   };
 
+  const TypingIndicator = () => (
+    <div style={styles.messageRow}>
+      <div style={{ ...styles.messageBubble, backgroundColor: "#444654" }}>
+        <div style={styles.typingIndicatorContainer}>
+          <span style={styles.typingDot}></span>
+          <span style={styles.typingDot}></span>
+          <span style={styles.typingDot}></span>
+        </div>
+      </div>
+    </div>
+  );
+
   const activeSession = useMemo(
     () => sessions.find((session) => session.id === activeChatId) || sessions[0],
     [sessions, activeChatId]
@@ -143,6 +156,7 @@ function App() {
     if (!input.trim() || loading) return;
 
     setLoading(true);
+    setTypingChatId(activeChatId);
 
     if (streamIntervalRef.current) {
       clearInterval(streamIntervalRef.current);
@@ -156,8 +170,7 @@ function App() {
         if (session.id !== activeChatId) return session;
         const updatedMessages = [
           ...session.messages,
-          userMessage,
-          { role: "bot", text: "Typing..." }
+          userMessage
         ];
         return {
           ...session,
@@ -197,19 +210,20 @@ function App() {
         fullText = `⚠️ API error: ${errorText}`;
       }
 
-      // 🧠 WORD-BY-WORD STREAMING
-      const words = fullText.split(" ");
-      let index = 0;
-
-      // Replace "Typing..." with empty first
+      // Add empty bot message and clear typing indicator
+      setTypingChatId(null);
       setSessions((prev) =>
         prev.map((session) => {
           if (session.id !== activeChatId) return session;
           const updated = [...session.messages];
-          updated[updated.length - 1] = { role: "bot", text: "" };
+          updated.push({ role: "bot", text: "" });
           return { ...session, messages: updated };
         })
       );
+
+      // 🧠 WORD-BY-WORD STREAMING
+      const words = fullText.split(" ");
+      let index = 0;
 
       streamIntervalRef.current = setInterval(() => {
         index++;
@@ -234,6 +248,7 @@ function App() {
 
     } catch (error) {
       console.error("sendMessage caught error", error);
+      setTypingChatId(null);
       if (streamIntervalRef.current) {
         clearInterval(streamIntervalRef.current);
         streamIntervalRef.current = null;
@@ -242,10 +257,7 @@ function App() {
         prev.map((session) => {
           if (session.id !== activeChatId) return session;
           const updated = [...session.messages];
-          updated[updated.length - 1] = {
-            role: "bot",
-            text: "⚠️ Error occurred"
-          };
+          updated.push({ role: "bot", text: "⚠️ Error occurred" });
           return { ...session, messages: updated };
         })
       );
@@ -330,7 +342,14 @@ function App() {
 
   return (
     <div id="app-root" style={styles.app}>
-      <style>{`#app-root pre{overflow-x:auto;max-width:100%;}#app-root pre code{white-space:pre;}`}</style>
+      <style>{`
+        #app-root pre{overflow-x:auto;max-width:100%;}
+        #app-root pre code{white-space:pre;}
+        @keyframes typing {
+          0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+          30% { opacity: 1; transform: translateY(-10px); }
+        }
+      `}</style>
       
       {/* Sidebar */}
       <div style={styles.sidebar}>
@@ -349,6 +368,7 @@ function App() {
               clearInterval(streamIntervalRef.current);
               streamIntervalRef.current = null;
             }
+            setTypingChatId(null);
             const session = createSession();
             setSessions((prev) => [...prev, session]);
             setActiveChatId(session.id);
@@ -374,11 +394,13 @@ function App() {
               tabIndex={0}
               onClick={() => {
                 setActiveChatId(session.id);
+                setTypingChatId(null);
                 shouldAutoScrollRef.current = true;
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   setActiveChatId(session.id);
+                  setTypingChatId(null);
                   shouldAutoScrollRef.current = true;
                 }
               }}
@@ -473,6 +495,7 @@ function App() {
               </div>
             </div>
           ))}
+          {typingChatId === activeChatId && <TypingIndicator />}
           <div ref={chatEndRef} />
         </div>
 
@@ -734,6 +757,18 @@ const styles = {
     height: "35px",
     color: "white",
     cursor: "pointer"
+  },
+  typingIndicatorContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px"
+  },
+  typingDot: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    backgroundColor: "#888",
+    animation: "typing 1.4s infinite"
   }
 };
 
