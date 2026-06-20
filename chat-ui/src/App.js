@@ -122,11 +122,40 @@ function App() {
               console.error("Failed to copy code block", err);
             }
           }}
-          style={styles.copyButton}
+          style={
+            theme === "light"
+              ? {
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e6e9ee",
+                  color: "#0f1720",
+                  borderRadius: "999px",
+                  padding: "6px 10px",
+                  fontSize: "12px",
+                  cursor: "pointer"
+                }
+              : styles.copyButton
+          }
         >
           {copiedCodeBlockId === codeBlockId ? "Copied!" : "Copy"}
         </button>
-        <pre style={styles.codeBlockPre}>
+        <pre
+          style={
+            theme === "light"
+              ? {
+                  overflowX: "auto",
+                  maxWidth: "100%",
+                  padding: "12px",
+                  borderRadius: "12px",
+                  backgroundColor: "#f5f5f5",
+                  margin: 0,
+                  color: "#0f1720"
+                }
+              : styles.codeBlockPre
+          }
+        >
           <code className={className} {...props}>
             {codeText}
           </code>
@@ -137,7 +166,19 @@ function App() {
 
   const TypingIndicator = () => (
     <div style={styles.messageRow}>
-      <div style={{ ...styles.messageBubble, backgroundColor: "#444654" }}>
+      <div
+        style={{
+          ...styles.messageBubble,
+          backgroundColor:
+            theme === "light"
+              ? stylesToUse.assistantBubble
+              : "#444654",
+          color:
+            theme === "light"
+              ? stylesToUse.assistantText
+              : "inherit"
+        }}
+      >
         <div style={styles.typingIndicatorContainer}>
           <span style={styles.typingDot}></span>
           <span style={styles.typingDot}></span>
@@ -538,7 +579,17 @@ function App() {
                 style={{
                   ...styles.messageBubble,
                   backgroundColor:
-                    msg.role === "user" ? "#10a37f" : "#444654"
+                    msg.role === "user"
+                      ? stylesToUse.userBubble
+                      : theme === "light"
+                      ? stylesToUse.assistantBubble
+                      : "#444654",
+                  color:
+                    msg.role === "user"
+                      ? stylesToUse.userText
+                      : theme === "light"
+                      ? stylesToUse.assistantText
+                      : "inherit"
                 }}
               >
                 {msg.role === "bot" ? (
@@ -556,8 +607,32 @@ function App() {
         </div>
 
         {/* Input */}
-        <div style={styles.inputContainer}>
-          <div style={styles.inputBox}>
+        <div
+          style={
+            theme === "light"
+              ? {
+                  flexShrink: 0,
+                  padding: "15px",
+                  borderTop: "1px solid #e6e9ee",
+                  backgroundColor: "#ffffff"
+                }
+              : styles.inputContainer
+          }
+        >
+          <div
+            style={
+              theme === "light"
+                ? {
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: "#ffffff",
+                    borderRadius: "25px",
+                    padding: "5px 10px",
+                    border: "1px solid #e6e9ee"
+                  }
+                : styles.inputBox
+            }
+          >
             <input
               ref={inputRef}
               value={input}
@@ -565,7 +640,18 @@ function App() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Send a message..."
-              style={styles.input}
+              style={
+                theme === "light"
+                  ? {
+                      flex: 1,
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: "#0f1720",
+                      padding: "10px"
+                    }
+                  : styles.input
+              }
             />
             <button onClick={sendMessage} disabled={loading} style={styles.sendBtn}>
               {loading ? "..." : "➤"}
