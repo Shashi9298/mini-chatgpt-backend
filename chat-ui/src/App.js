@@ -680,7 +680,8 @@ function App() {
                       resize: "none",
                       height: "24px",
                       maxHeight: "200px",
-                      overflow: "hidden"
+                      overflowY: "auto",
+                      overflowX: "hidden"
                     }
                   : {
                       flex: 1,
@@ -695,7 +696,8 @@ function App() {
                       resize: "none",
                       height: "24px",
                       maxHeight: "200px",
-                      overflow: "hidden"
+                      overflowY: "auto",
+                      overflowX: "hidden"
                     }
               }
             ></textarea>
