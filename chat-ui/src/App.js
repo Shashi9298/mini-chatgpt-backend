@@ -246,6 +246,8 @@ function App() {
         if (index >= words.length) {
           clearInterval(streamIntervalRef.current);
           streamIntervalRef.current = null;
+          // When streaming completes, keep focus on input so user can type next message
+          inputRef.current?.focus();
         }
       }, 50); // ⏱️ speed (60–120 ideal)
 
@@ -352,6 +354,12 @@ function App() {
           0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
           30% { opacity: 1; transform: translateY(-10px); }
         }
+        /* Dark themed scrollbars for the app */
+        #app-root { scrollbar-color: #343541 #1f1f23; scrollbar-width: thin; }
+        #app-root ::-webkit-scrollbar { width: 10px; height: 10px; }
+        #app-root ::-webkit-scrollbar-track { background: #1f1f23; }
+        #app-root ::-webkit-scrollbar-thumb { background: #343541; border-radius: 8px; border: 2px solid #1f1f23; }
+        #app-root ::-webkit-scrollbar-thumb:hover { background: #4b4b53; }
       `}</style>
       
       {/* Sidebar */}
@@ -379,6 +387,7 @@ function App() {
             shouldAutoScrollRef.current = true;
             setInput("");
             setLoading(false);
+              inputRef.current?.focus();
           }}
         >
           + New Chat
@@ -584,6 +593,7 @@ const styles = {
   sidebarHistory: {
     flex: 1,
     overflowY: "auto",
+    paddingRight: "12px",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
@@ -599,6 +609,7 @@ const styles = {
     width: "100%",
     textAlign: "left",
     padding: "12px",
+    boxSizing: "border-box",
     borderRadius: "12px",
     backgroundColor: "#17181b",
     border: "1px solid transparent",
