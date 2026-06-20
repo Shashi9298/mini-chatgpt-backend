@@ -525,14 +525,16 @@ function App() {
 const styles = {
   app: {
     display: "flex",
-    flexWrap: "wrap",
-    minHeight: "100vh",
+    height: "100vh",
+    overflow: "hidden",
     backgroundColor: "#343541",
     color: "white"
   },
   sidebar: {
     width: "280px",
     minWidth: "260px",
+    height: "100vh",
+    overflow: "hidden",
     backgroundColor: "#202123",
     padding: "20px",
     display: "flex",
@@ -577,6 +579,8 @@ const styles = {
     textAlign: "left"
   },
   sidebarHistory: {
+    flex: 1,
+    overflowY: "auto",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
@@ -730,6 +734,7 @@ const styles = {
     cursor: "pointer"
   },
   inputContainer: {
+    flexShrink: 0,
     padding: "15px",
     borderTop: "1px solid #555",
     backgroundColor: "#40414f"
