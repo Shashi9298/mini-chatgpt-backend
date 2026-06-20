@@ -632,54 +632,71 @@ function App() {
           style={styles.chatArea}
           onScroll={handleChatScroll}
         >
-          {chat.map((msg, i) => (
+          {chat.length === 0 ? (
             <div
-              key={i}
               style={{
-                ...styles.messageRow,
-                justifyContent:
-                  msg.role === "user" ? "flex-end" : "flex-start"
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+                textAlign: "center",
+                color: theme === "light" ? "#0f1720" : "#e5e7eb"
               }}
             >
-              <div
-                style={{
-                  ...styles.messageBubble,
-                  backgroundColor:
-                    msg.role === "user"
-                      ? theme === "light"
-                        ? "#f4f4f4"
-                        : "#4a4d63"
-                      : theme === "light"
-                      ? stylesToUse.assistantBubble
-                      : "#444654",
-                  border:
-                    msg.role === "user"
-                      ? theme === "light"
-                        ? "1px solid #d9dce3"
-                        : "1px solid #5a5c73"
-                      : "none",
-                  color:
-                    msg.role === "user"
-                      ? theme === "light"
-                        ? "#0f1720"
-                        : "white"
-                      : theme === "light"
-                      ? stylesToUse.assistantText
-                      : "inherit"
-                }}
-              >
-                {msg.role === "bot" ? (
-                  <ReactMarkdown components={{ code: renderMarkdownCode }}>
-                    {msg.text}
-                  </ReactMarkdown>
-                ) : (
-                  msg.text
-                )}
-              </div>
+              How can I help you today?
             </div>
-          ))}
-          {typingChatId === activeChatId && <TypingIndicator />}
-          <div ref={chatEndRef} />
+          ) : (
+            <>
+              {chat.map((msg, i) => (
+                <div
+                  key={i}
+                  style={{
+                    ...styles.messageRow,
+                    justifyContent:
+                      msg.role === "user" ? "flex-end" : "flex-start"
+                  }}
+                >
+                  <div
+                    style={{
+                      ...styles.messageBubble,
+                      backgroundColor:
+                        msg.role === "user"
+                          ? theme === "light"
+                            ? "#f4f4f4"
+                            : "#4a4d63"
+                          : theme === "light"
+                          ? stylesToUse.assistantBubble
+                          : "#444654",
+                      border:
+                        msg.role === "user"
+                          ? theme === "light"
+                            ? "1px solid #d9dce3"
+                            : "1px solid #5a5c73"
+                          : "none",
+                      color:
+                        msg.role === "user"
+                          ? theme === "light"
+                            ? "#0f1720"
+                            : "white"
+                          : theme === "light"
+                          ? stylesToUse.assistantText
+                          : "inherit"
+                    }}
+                  >
+                    {msg.role === "bot" ? (
+                      <ReactMarkdown components={{ code: renderMarkdownCode }}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    ) : (
+                      msg.text
+                    )}
+                  </div>
+                </div>
+              ))}
+              {typingChatId === activeChatId && <TypingIndicator />}
+              <div ref={chatEndRef} />
+            </>
+          )}
         </div>
 
         {/* Input */}
