@@ -66,7 +66,7 @@ function App() {
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const textareaRef = useRef(null);
   const streamIntervalRef = useRef(null);
   const chatRef = useRef([]);
   const shouldAutoScrollRef = useRef(true);
@@ -87,6 +87,15 @@ function App() {
       block: "end",
       inline: "nearest"
     });
+  };
+
+  const handleTextareaChange = (e) => {
+    setInput(e.target.value);
+    // Auto-expand textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + "px";
+    }
   };
 
   const renderMarkdownCode = ({ inline, className, children, ...props }) => {
@@ -288,8 +297,8 @@ function App() {
         if (index >= words.length) {
           clearInterval(streamIntervalRef.current);
           streamIntervalRef.current = null;
-          // When streaming completes, keep focus on input so user can type next message
-          inputRef.current?.focus();
+          // When streaming completes, keep focus on textarea so user can type next message
+          textareaRef.current?.focus();
         }
       }, 50); // ⏱️ speed (60–120 ideal)
 
@@ -384,7 +393,7 @@ function App() {
 
   // Auto focus
   useEffect(() => {
-    inputRef.current?.focus();
+    textareaRef.current?.focus();
   }, []);
 
   // Persist theme selection
@@ -472,24 +481,21 @@ function App() {
             shouldAutoScrollRef.current = true;
             setInput("");
             setLoading(false);
-              inputRef.current?.focus();
+            textareaRef.current?.focus();
           }}
         >
           + New Chat
         </button>
 
         <div style={stylesToUse.sidebarHistory}>
-          <div style={stylesToUse.sidebarSectionTitle}>Chat History</div>
           {sessions.map((session) => (
             <div
-              key={session.id}
-              style={{
-                ...stylesToUse.sessionItem,
-                ...(session.id === activeChatId ? stylesToUse.sessionItemActive : {})
-              }}
-              role="button"
-              tabIndex={0}
-              onClick={() => {
+              style={
+                activeChatId === session.id
+                  ? stylesToUse.sessionItemActive
+                  : stylesToUse.sessionItem
+              }
+              onClick={(e) => {
                 setActiveChatId(session.id);
                 setTypingChatId(null);
                 shouldAutoScrollRef.current = true;
@@ -612,11 +618,16 @@ function App() {
             theme === "light"
               ? {
                   flexShrink: 0,
-                  padding: "15px",
-                  borderTop: "1px solid #e6e9ee",
-                  backgroundColor: "#ffffff"
+                  padding: "16px 20px 20px 20px",
+                  backgroundColor: "#ffffff",
+                  borderTop: "none"
                 }
-              : styles.inputContainer
+              : {
+                  flexShrink: 0,
+                  padding: "16px 20px 20px 20px",
+                  backgroundColor: "transparent",
+                  borderTop: "none"
+                }
           }
         >
           <div
@@ -624,21 +635,35 @@ function App() {
               theme === "light"
                 ? {
                     display: "flex",
-                    alignItems: "center",
+                    alignItems: "flex-end",
                     backgroundColor: "#ffffff",
-                    borderRadius: "25px",
-                    padding: "5px 10px",
-                    border: "1px solid #e6e9ee"
+                    borderRadius: "24px",
+                    padding: "12px 16px",
+                    border: "1px solid #e6e9ee",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
                   }
-                : styles.inputBox
+                : {
+                    display: "flex",
+                    alignItems: "flex-end",
+                    backgroundColor: "#40414f",
+                    borderRadius: "24px",
+                    padding: "12px 16px",
+                    border: "1px solid #565869",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)"
+                  }
             }
           >
-            <input
-              ref={inputRef}
+            <textarea
+              ref={textareaRef}
               value={input}
               disabled={loading}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              onChange={handleTextareaChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
               placeholder="Send a message..."
               style={
                 theme === "light"
@@ -648,12 +673,41 @@ function App() {
                       border: "none",
                       outline: "none",
                       color: "#0f1720",
-                      padding: "10px"
+                      padding: "0px",
+                      fontFamily: "inherit",
+                      fontSize: "16px",
+                      lineHeight: "1.5",
+                      resize: "none",
+                      height: "24px",
+                      maxHeight: "200px",
+                      overflow: "hidden"
                     }
-                  : styles.input
+                  : {
+                      flex: 1,
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: "white",
+                      padding: "0px",
+                      fontFamily: "inherit",
+                      fontSize: "16px",
+                      lineHeight: "1.5",
+                      resize: "none",
+                      height: "24px",
+                      maxHeight: "200px",
+                      overflow: "hidden"
+                    }
               }
-            />
-            <button onClick={sendMessage} disabled={loading} style={styles.sendBtn}>
+            ></textarea>
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              style={{
+                ...styles.sendBtn,
+                marginLeft: "12px",
+                flexShrink: 0
+              }}
+            >
               {loading ? "..." : "➤"}
             </button>
           </div>
