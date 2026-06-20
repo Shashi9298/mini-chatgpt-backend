@@ -157,6 +157,9 @@ function App() {
 
     setLoading(true);
     setTypingChatId(activeChatId);
+    // Immediately jump to the latest messages when user sends
+    shouldAutoScrollRef.current = true;
+    scrollToBottom();
 
     if (streamIntervalRef.current) {
       clearInterval(streamIntervalRef.current);
