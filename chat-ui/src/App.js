@@ -63,6 +63,7 @@ function App() {
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
   const [typingChatId, setTypingChatId] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem("mini_gpt_theme") || "dark");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -444,7 +445,17 @@ function App() {
       <style>{styleTag}</style>
       
       {/* Sidebar */}
-      <div style={stylesToUse.sidebar}>
+      <div
+        style={{
+          ...stylesToUse.sidebar,
+          width: sidebarOpen ? 280 : 0,
+          minWidth: sidebarOpen ? "260px" : 0,
+          padding: sidebarOpen ? "20px" : 0,
+          borderRight: sidebarOpen ? "1px solid #2a2b32" : "none",
+          overflow: "hidden",
+          transition: "width 0.25s ease, padding 0.25s ease, border-right 0.25s ease"
+        }}
+      >
         <div style={stylesToUse.sidebarHeader}>
           <div style={stylesToUse.logoCircle}>AI</div>
           <div>
@@ -565,6 +576,17 @@ function App() {
 
       {/* Main */}
       <div style={styles.main}>
+        <div style={{ display: "flex", alignItems: "center", padding: "20px 20px 0", gap: "8px" }}>
+          <button
+            type="button"
+            aria-label="Toggle sidebar"
+            title="Toggle sidebar"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            style={styles.themeToggleBtn}
+          >
+            ☰
+          </button>
+        </div>
 
         {/* Chat */}
         <div
