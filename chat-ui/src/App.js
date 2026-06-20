@@ -62,6 +62,7 @@ function App() {
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
   const [typingChatId, setTypingChatId] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem("mini_gpt_theme") || "dark");
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -345,22 +346,52 @@ function App() {
     inputRef.current?.focus();
   }, []);
 
+  // Persist theme selection
+  useEffect(() => {
+    try {
+      localStorage.setItem("mini_gpt_theme", theme);
+    } catch (e) {
+      // ignore write errors
+    }
+  }, [theme]);
+
+  const stylesToUse = useMemo(() => {
+    if (theme !== "light") return styles;
+
+    return {
+      ...styles,
+      app: { ...styles.app, backgroundColor: "#f7f8fb", color: "#0f1720" },
+      sidebar: { ...styles.sidebar, backgroundColor: "#ffffff", borderRight: "1px solid #e6e9ee" },
+      logoCircle: { ...styles.logoCircle, backgroundColor: "#0ea37f", color: "white" },
+      sessionItem: { ...styles.sessionItem, backgroundColor: "#ffffff", border: "1px solid #eef0f3", color: "#0f1720" },
+      sessionItemActive: { ...styles.sessionItemActive, borderColor: "#0ea37f", backgroundColor: "#f0faf6" },
+      sessionItemSubtitle: { ...styles.sessionItemSubtitle, color: "#6b7280" },
+      inputContainer: { ...styles.inputContainer, backgroundColor: "#ffffff", borderTop: "1px solid #e6e9ee" },
+      inputBox: { ...styles.inputBox, backgroundColor: "#ffffff" },
+      input: { ...styles.input, color: "#0f1720" },
+      messageBubble: { ...styles.messageBubble, color: "#0f1720" },
+      copyButton: { ...styles.copyButton, backgroundColor: "#ffffff", border: "1px solid #e6e9ee", color: "#0f1720" },
+      userBubble: "#10a37f",
+      assistantBubble: "#f1f3f5",
+      userText: "#ffffff",
+      assistantText: "#0f1720",
+      scrollbarTrack: "#f1f3f5",
+      scrollbarThumb: "#d1d5db",
+      scrollbarThumbHover: "#9ca3af"
+    };
+  }, [theme]);
+
+  const styleTag = useMemo(() => {
+    const isLight = theme === "light";
+    const track = isLight ? stylesToUse.scrollbarTrack : "#1f1f23";
+    const thumb = isLight ? stylesToUse.scrollbarThumb : "#343541";
+    const thumbHover = isLight ? stylesToUse.scrollbarThumbHover : "#4b4b53";
+    return `\n      #app-root pre{overflow-x:auto;max-width:100%;}\n      #app-root pre code{white-space:pre;}\n      @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-10px); } }\n      #app-root { scrollbar-color: ${thumb} ${track}; scrollbar-width: thin; }\n      #app-root ::-webkit-scrollbar { width: 10px; height: 10px; }\n      #app-root ::-webkit-scrollbar-track { background: ${track}; }\n      #app-root ::-webkit-scrollbar-thumb { background: ${thumb}; border-radius: 8px; border: 2px solid ${track}; }\n      #app-root ::-webkit-scrollbar-thumb:hover { background: ${thumbHover}; }\n    `;
+  }, [theme, stylesToUse]);
+
   return (
-    <div id="app-root" style={styles.app}>
-      <style>{`
-        #app-root pre{overflow-x:auto;max-width:100%;}
-        #app-root pre code{white-space:pre;}
-        @keyframes typing {
-          0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
-          30% { opacity: 1; transform: translateY(-10px); }
-        }
-        /* Dark themed scrollbars for the app */
-        #app-root { scrollbar-color: #343541 #1f1f23; scrollbar-width: thin; }
-        #app-root ::-webkit-scrollbar { width: 10px; height: 10px; }
-        #app-root ::-webkit-scrollbar-track { background: #1f1f23; }
-        #app-root ::-webkit-scrollbar-thumb { background: #343541; border-radius: 8px; border: 2px solid #1f1f23; }
-        #app-root ::-webkit-scrollbar-thumb:hover { background: #4b4b53; }
-      `}</style>
+    <div id="app-root" style={stylesToUse.app}>
+      <style>{styleTag}</style>
       
       {/* Sidebar */}
       <div style={styles.sidebar}>
@@ -370,6 +401,15 @@ function App() {
             <div style={styles.sidebarTitle}>MiniGPT</div>
             <div style={styles.sidebarSubtitle}>Conversational AI</div>
           </div>
+          <button
+            type="button"
+            aria-label="Toggle theme"
+            title="Toggle theme"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            style={styles.themeToggleBtn}
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
         </div>
 
         <button
@@ -788,6 +828,18 @@ const styles = {
     borderRadius: "50%",
     backgroundColor: "#888",
     animation: "typing 1.4s infinite"
+  }
+  ,
+  themeToggleBtn: {
+    marginLeft: "auto",
+    background: "transparent",
+    border: "1px solid transparent",
+    color: "inherit",
+    cursor: "pointer",
+    fontSize: "16px",
+    padding: "6px 8px",
+    borderRadius: "8px",
+    lineHeight: 1
   }
 };
 
