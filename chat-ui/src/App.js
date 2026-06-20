@@ -321,6 +321,9 @@ function App() {
     }
 
     setInput("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "24px";
+    }
     setLoading(false);
   };
 
@@ -462,15 +465,26 @@ function App() {
             <div style={stylesToUse.sidebarTitle}>MiniGPT</div>
             <div style={stylesToUse.sidebarSubtitle}>Conversational AI</div>
           </div>
-          <button
-            type="button"
-            aria-label="Toggle theme"
-            title="Toggle theme"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            style={styles.themeToggleBtn}
-          >
-            {theme === "light" ? "🌙" : "☀️"}
-          </button>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto" }}>
+            <button
+              type="button"
+              aria-label="Toggle sidebar"
+              title="Toggle sidebar"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              style={styles.themeToggleBtn}
+            >
+              ☰
+            </button>
+            <button
+              type="button"
+              aria-label="Toggle theme"
+              title="Toggle theme"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              style={styles.themeToggleBtn}
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+          </div>
         </div>
 
         <button
@@ -510,12 +524,20 @@ function App() {
                 setActiveChatId(session.id);
                 setTypingChatId(null);
                 shouldAutoScrollRef.current = true;
+                if (textareaRef.current) {
+                  textareaRef.current.style.height = "24px";
+                  textareaRef.current.focus();
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   setActiveChatId(session.id);
                   setTypingChatId(null);
                   shouldAutoScrollRef.current = true;
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = "24px";
+                    textareaRef.current.focus();
+                  }
                 }
               }}
             >
@@ -576,17 +598,33 @@ function App() {
 
       {/* Main */}
       <div style={styles.main}>
-        <div style={{ display: "flex", alignItems: "center", padding: "20px 20px 0", gap: "8px" }}>
+        {!sidebarOpen && (
           <button
             type="button"
-            aria-label="Toggle sidebar"
-            title="Toggle sidebar"
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            style={styles.themeToggleBtn}
+            aria-label="Open sidebar"
+            title="Open sidebar"
+            onClick={() => setSidebarOpen(true)}
+            style={{
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              backgroundColor: "#10a37f",
+              color: "#ffffff",
+              border: "none",
+              cursor: "pointer",
+              zIndex: 1000,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 8px 20px rgba(16, 163, 127, 0.25)"
+            }}
           >
             ☰
           </button>
-        </div>
+        )}
 
         {/* Chat */}
         <div
@@ -608,13 +646,23 @@ function App() {
                   ...styles.messageBubble,
                   backgroundColor:
                     msg.role === "user"
-                      ? stylesToUse.userBubble
+                      ? theme === "light"
+                        ? "#f4f4f4"
+                        : "#4a4d63"
                       : theme === "light"
                       ? stylesToUse.assistantBubble
                       : "#444654",
+                  border:
+                    msg.role === "user"
+                      ? theme === "light"
+                        ? "1px solid #d9dce3"
+                        : "1px solid #5a5c73"
+                      : "none",
                   color:
                     msg.role === "user"
-                      ? stylesToUse.userText
+                      ? theme === "light"
+                        ? "#0f1720"
+                        : "white"
                       : theme === "light"
                       ? stylesToUse.assistantText
                       : "inherit"
@@ -661,7 +709,7 @@ function App() {
                     backgroundColor: "#ffffff",
                     borderRadius: "24px",
                     padding: "12px 16px",
-                    border: "1px solid #e6e9ee",
+                    border: "1px solid #d9dce3",
                     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
                   }
                 : {
@@ -670,7 +718,7 @@ function App() {
                     backgroundColor: "#40414f",
                     borderRadius: "24px",
                     padding: "12px 16px",
-                    border: "1px solid #565869",
+                    border: "1px solid #5a5c73",
                     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)"
                   }
             }
