@@ -394,12 +394,12 @@ function App() {
       <style>{styleTag}</style>
       
       {/* Sidebar */}
-      <div style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <div style={styles.logoCircle}>AI</div>
+      <div style={stylesToUse.sidebar}>
+        <div style={stylesToUse.sidebarHeader}>
+          <div style={stylesToUse.logoCircle}>AI</div>
           <div>
-            <div style={styles.sidebarTitle}>MiniGPT</div>
-            <div style={styles.sidebarSubtitle}>Conversational AI</div>
+            <div style={stylesToUse.sidebarTitle}>MiniGPT</div>
+            <div style={stylesToUse.sidebarSubtitle}>Conversational AI</div>
           </div>
           <button
             type="button"
@@ -413,7 +413,11 @@ function App() {
         </div>
 
         <button
-          style={styles.newChatBtn}
+          style={
+            theme === "light"
+              ? { ...styles.newChatBtn, backgroundColor: "#ffffff", border: "1px solid #e6e9ee", color: "#0f1720" }
+              : styles.newChatBtn
+          }
           onClick={() => {
             if (streamIntervalRef.current) {
               clearInterval(streamIntervalRef.current);
@@ -433,14 +437,14 @@ function App() {
           + New Chat
         </button>
 
-        <div style={styles.sidebarHistory}>
-          <div style={styles.sidebarSectionTitle}>Chat History</div>
+        <div style={stylesToUse.sidebarHistory}>
+          <div style={stylesToUse.sidebarSectionTitle}>Chat History</div>
           {sessions.map((session) => (
             <div
               key={session.id}
               style={{
-                ...styles.sessionItem,
-                ...(session.id === activeChatId ? styles.sessionItemActive : {})
+                ...stylesToUse.sessionItem,
+                ...(session.id === activeChatId ? stylesToUse.sessionItemActive : {})
               }}
               role="button"
               tabIndex={0}
@@ -457,7 +461,7 @@ function App() {
                 }
               }}
             >
-              <div style={styles.sessionItemHeader}>
+              <div style={stylesToUse.sessionItemHeader}>
                 {editingSessionId === session.id ? (
                   <input
                     type="text"
@@ -469,17 +473,17 @@ function App() {
                     }}
                     onBlur={() => handleSaveEdit(session.id)}
                     autoFocus
-                    style={styles.editInput}
+                    style={stylesToUse.editInput}
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <div style={styles.sessionItemTitle} title={session.title}>{session.title}</div>
+                  <div style={stylesToUse.sessionItemTitle} title={session.title}>{session.title}</div>
                 )}
-                <div style={styles.sessionItemActions} onClick={(e) => e.stopPropagation()}>
+                <div style={stylesToUse.sessionItemActions} onClick={(e) => e.stopPropagation()}>
                   {editingSessionId !== session.id && (
                     <button
                       type="button"
-                      style={styles.editBtn}
+                      style={stylesToUse.editBtn}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleStartEdit(session.id, session.title);
@@ -492,7 +496,7 @@ function App() {
                   )}
                   <button
                     type="button"
-                    style={styles.deleteBtn}
+                    style={stylesToUse.deleteBtn}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteSession(session.id);
@@ -504,7 +508,7 @@ function App() {
                   </button>
                 </div>
               </div>
-              <div style={styles.sessionItemSubtitle}>
+              <div style={stylesToUse.sessionItemSubtitle}>
                 {new Date(session.createdAt).toLocaleString()}
               </div>
             </div>
