@@ -62,6 +62,7 @@ function App() {
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
   const [typingChatId, setTypingChatId] = useState(null);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem("mini_gpt_theme") || "dark");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -279,6 +280,7 @@ function App() {
       // 🧠 WORD-BY-WORD STREAMING
       const words = fullText.split(" ");
       let index = 0;
+      setIsStreaming(true);
 
       streamIntervalRef.current = setInterval(() => {
         index++;
@@ -298,6 +300,7 @@ function App() {
         if (index >= words.length) {
           clearInterval(streamIntervalRef.current);
           streamIntervalRef.current = null;
+          setIsStreaming(false);
           // When streaming completes, keep focus on textarea so user can type next message
           textareaRef.current?.focus();
         }
@@ -788,6 +791,37 @@ function App() {
                     }
               }
             ></textarea>
+            {isStreaming && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (streamIntervalRef.current) {
+                    clearInterval(streamIntervalRef.current);
+                    streamIntervalRef.current = null;
+                  }
+                  setIsStreaming(false);
+                  setTypingChatId(null);
+                  setLoading(false);
+                }}
+                style={{
+                  marginLeft: "12px",
+                  padding: "0",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "999px",
+                  border: "none",
+                  backgroundColor: "#10a37f",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)"
+                }}
+              >
+                ⬛
+              </button>
+            )}
             <button
               onClick={sendMessage}
               disabled={loading}
