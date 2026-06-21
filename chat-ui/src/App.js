@@ -480,37 +480,6 @@ function App() {
     <div id="app-root" style={stylesToUse.app}>
       <style>{styleTag}</style>
 
-      {isMobile && !sidebarOpen && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "14px 18px",
-            borderBottom: theme === "light" ? "1px solid #e6e9ee" : "1px solid #2a2b32",
-            backgroundColor: theme === "light" ? "#ffffff" : "#202123",
-            color: theme === "light" ? "#0f1720" : "white"
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
-            style={mobileCircleBtnStyle}
-          >
-            ☰
-          </button>
-          <button
-            type="button"
-            aria-label="Toggle theme"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            style={mobileCircleBtnStyle}
-          >
-            {theme === "light" ? "🌙" : "☀️"}
-          </button>
-        </div>
-      )}
-
       {/* Sidebar */}
       <div
         className="sidebar"
@@ -706,32 +675,38 @@ function App() {
 
       {/* Main */}
       <div className="main-pane" style={styles.main}>
-        {!sidebarOpen && !isMobile && (
-          <button
-            type="button"
-            aria-label="Open sidebar"
-            title="Open sidebar"
-            onClick={() => setSidebarOpen(true)}
+        {isMobile && !sidebarOpen && (
+          <div
             style={{
-              position: "fixed",
-              top: "20px",
-              left: "20px",
-              width: "48px",
-              height: "48px",
-              borderRadius: "50%",
-              backgroundColor: "#10a37f",
-              color: "#ffffff",
-              border: "none",
-              cursor: "pointer",
-              zIndex: 1000,
+              width: "100%",
+              boxSizing: "border-box",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 8px 20px rgba(16, 163, 127, 0.25)"
+              justifyContent: "space-between",
+              flexShrink: 0,
+              padding: "14px 18px",
+              borderBottom: theme === "light" ? "1px solid #e6e9ee" : "1px solid #2a2b32",
+              backgroundColor: theme === "light" ? "#ffffff" : "#202123",
+              color: theme === "light" ? "#0f1720" : "white"
             }}
           >
-            ☰
-          </button>
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+              style={mobileCircleBtnStyle}
+            >
+              ☰
+            </button>
+            <button
+              type="button"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              style={mobileCircleBtnStyle}
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+          </div>
         )}
 
         {/* Chat */}
