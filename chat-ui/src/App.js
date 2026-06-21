@@ -61,6 +61,7 @@ function App() {
   const [copiedCodeBlockId, setCopiedCodeBlockId] = useState(null);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState("");
+  const [hoveredSessionId, setHoveredSessionId] = useState(null);
   const [typingChatId, setTypingChatId] = useState(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem("mini_gpt_theme") || "dark");
@@ -595,23 +596,14 @@ function App() {
         <div style={stylesToUse.sidebarHistory}>
           {sessions.map((session) => (
             <div
-              style={
-                activeChatId === session.id
-                  ? stylesToUse.sessionItemActive
-                  : stylesToUse.sessionItem
-              }
-              onClick={(e) => {
-                setActiveChatId(session.id);
-                setTypingChatId(null);
-                shouldAutoScrollRef.current = true;
-                if (textareaRef.current) {
-                  textareaRef.current.style.height = "24px";
-                  textareaRef.current.focus();
+                style={
+                  activeChatId === session.id
+                    ? stylesToUse.sessionItemActive
+                    : stylesToUse.sessionItem
                 }
-                if (isMobile) setSidebarOpen(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+                onMouseEnter={() => setHoveredSessionId(session.id)}
+                onMouseLeave={() => setHoveredSessionId(null)}
+                onClick={(e) => {
                   setActiveChatId(session.id);
                   setTypingChatId(null);
                   shouldAutoScrollRef.current = true;
@@ -620,8 +612,19 @@ function App() {
                     textareaRef.current.focus();
                   }
                   if (isMobile) setSidebarOpen(false);
-                }
-              }}
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setActiveChatId(session.id);
+                    setTypingChatId(null);
+                    shouldAutoScrollRef.current = true;
+                    if (textareaRef.current) {
+                      textareaRef.current.style.height = "24px";
+                      textareaRef.current.focus();
+                    }
+                    if (isMobile) setSidebarOpen(false);
+                  }
+                }}
             >
               <div style={stylesToUse.sessionItemHeader}>
                 {editingSessionId === session.id ? (
@@ -645,7 +648,12 @@ function App() {
                   {editingSessionId !== session.id && (
                     <button
                       type="button"
-                      style={stylesToUse.editBtn}
+                      style={{
+                        ...stylesToUse.editBtn,
+                        opacity: isMobile || hoveredSessionId === session.id ? 1 : 0,
+                        transition: "opacity 0.15s",
+                        pointerEvents: isMobile || hoveredSessionId === session.id ? "auto" : "none"
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleStartEdit(session.id, session.title);
@@ -658,15 +666,22 @@ function App() {
                   )}
                   <button
                     type="button"
-                    style={stylesToUse.deleteBtn}
+                    style={{
+                      ...stylesToUse.deleteBtn,
+                      opacity: isMobile || hoveredSessionId === session.id ? 1 : 0,
+                      transition: "opacity 0.15s",
+                      pointerEvents: isMobile || hoveredSessionId === session.id ? "auto" : "none"
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteSession(session.id);
+                      if (window.confirm("Delete this chat?")) {
+                        handleDeleteSession(session.id);
+                      }
                     }}
                     aria-label={`Delete chat ${session.title}`}
                     title={`Delete: ${session.title}`}
                   >
-                    
+                    🗑️
                   </button>
                 </div>
               </div>
