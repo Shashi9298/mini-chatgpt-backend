@@ -462,11 +462,25 @@ function App() {
     return `\n      #app-root pre{overflow-x:auto;max-width:100%;}\n      #app-root pre code{white-space:pre;}\n      @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-10px); } }\n      #app-root { scrollbar-color: ${thumb} ${track}; scrollbar-width: thin; }\n      #app-root ::-webkit-scrollbar { width: 10px; height: 10px; }\n      #app-root ::-webkit-scrollbar-track { background: ${track}; }\n      #app-root ::-webkit-scrollbar-thumb { background: ${thumb}; border-radius: 8px; border: 2px solid ${track}; }\n      #app-root ::-webkit-scrollbar-thumb:hover { background: ${thumbHover}; }\n    `;
   }, [theme, stylesToUse]);
 
+  const mobileCircleBtnStyle = {
+    width: "40px",
+    height: "40px",
+    borderRadius: "999px",
+    backgroundColor: "#10a37f",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 12px rgba(16, 163, 127, 0.25)"
+  };
+
   return (
     <div id="app-root" style={stylesToUse.app}>
       <style>{styleTag}</style>
 
-      {isMobile && (
+      {isMobile && !sidebarOpen && (
         <div
           style={{
             display: "flex",
@@ -480,9 +494,9 @@ function App() {
         >
           <button
             type="button"
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            aria-label="Toggle sidebar"
-            style={styles.themeToggleBtn}
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
+            style={mobileCircleBtnStyle}
           >
             ☰
           </button>
@@ -490,7 +504,7 @@ function App() {
             type="button"
             aria-label="Toggle theme"
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            style={styles.themeToggleBtn}
+            style={mobileCircleBtnStyle}
           >
             {theme === "light" ? "🌙" : "☀️"}
           </button>
@@ -539,6 +553,28 @@ function App() {
               </button>
             </div>
           )}
+          {isMobile && sidebarOpen && (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto" }}>
+              <button
+                type="button"
+                aria-label="Close sidebar"
+                title="Close sidebar"
+                onClick={() => setSidebarOpen(false)}
+                style={mobileCircleBtnStyle}
+              >
+                ☰
+              </button>
+              <button
+                type="button"
+                aria-label="Toggle theme"
+                title="Toggle theme"
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                style={mobileCircleBtnStyle}
+              >
+                {theme === "light" ? "🌙" : "☀️"}
+              </button>
+            </div>
+          )}
         </div>
 
         <button
@@ -561,6 +597,7 @@ function App() {
             setInput("");
             setLoading(false);
             textareaRef.current?.focus();
+            if (isMobile) setSidebarOpen(false);
           }}
         >
           + New Chat
@@ -581,8 +618,8 @@ function App() {
                 if (textareaRef.current) {
                   textareaRef.current.style.height = "24px";
                   textareaRef.current.focus();
-                  if (isMobile) setSidebarOpen(false);
                 }
+                if (isMobile) setSidebarOpen(false);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -592,8 +629,8 @@ function App() {
                   if (textareaRef.current) {
                     textareaRef.current.style.height = "24px";
                     textareaRef.current.focus();
-                    if (isMobile) setSidebarOpen(false);
                   }
+                  if (isMobile) setSidebarOpen(false);
                 }
               }}
             >
