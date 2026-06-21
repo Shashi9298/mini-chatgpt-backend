@@ -69,7 +69,7 @@
   }
 
   .chat-area {
-    padding: 16px !important;
+    padding: 0 16px 16px 16px !important;
   }
 
   .message-bubble {

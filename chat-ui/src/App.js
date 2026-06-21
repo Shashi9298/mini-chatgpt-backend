@@ -712,25 +712,18 @@ function App() {
           </button>
         )}
         {isMobile && !sidebarOpen && (
-          <div
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexShrink: 0,
-              padding: "14px 18px",
-              borderBottom: theme === "light" ? "1px solid #e6e9ee" : "1px solid #2a2b32",
-              backgroundColor: theme === "light" ? "#ffffff" : "#202123",
-              color: theme === "light" ? "#0f1720" : "white"
-            }}
-          >
+          <>
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
-              style={mobileCircleBtnStyle}
+              style={{
+                ...mobileCircleBtnStyle,
+                position: "fixed",
+                top: "16px",
+                left: "16px",
+                zIndex: 1002
+              }}
             >
               ☰
             </button>
@@ -738,11 +731,17 @@ function App() {
               type="button"
               aria-label="Toggle theme"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              style={mobileCircleBtnStyle}
+              style={{
+                ...mobileCircleBtnStyle,
+                position: "fixed",
+                top: "16px",
+                right: "16px",
+                zIndex: 1002
+              }}
             >
               {theme === "light" ? "🌙" : "☀️"}
             </button>
-          </div>
+          </>
         )}
 
         {/* Chat */}
