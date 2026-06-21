@@ -695,6 +695,22 @@ function App() {
 
       {/* Main */}
       <div className="main-pane" style={styles.main}>
+        {!isMobile && !sidebarOpen && (
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
+            style={{
+              ...styles.themeToggleBtn,
+              position: "absolute",
+              top: "16px",
+              left: "16px",
+              zIndex: 1002
+            }}
+          >
+            ☰
+          </button>
+        )}
         {isMobile && !sidebarOpen && (
           <div
             style={{
