@@ -502,6 +502,7 @@ function App() {
         className="sidebar"
         style={{
           ...stylesToUse.sidebar,
+          zIndex: 1001,
           width: sidebarOpen ? "min(280px, 100%)" : 0,
           minWidth: sidebarOpen ? "min(260px, 100%)" : 0,
           padding: sidebarOpen ? "20px" : 0,
@@ -639,7 +640,7 @@ function App() {
                     aria-label={`Delete chat ${session.title}`}
                     title={`Delete: ${session.title}`}
                   >
-                    ×
+                    
                   </button>
                 </div>
               </div>
