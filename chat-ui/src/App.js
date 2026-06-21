@@ -222,14 +222,22 @@ function App() {
 
     const userMessage = { role: "user", text: input };
     const apiMessages = [...chatRef.current, userMessage];
-    setSessions((prev) =>
-      prev.map((session) => {
-        if (session.id !== activeChatId) return session;
+    setSessions((prev) => {
+      let updatedSession = null;
+      const otherSessions = [];
+
+      prev.forEach((session) => {
+        if (session.id !== activeChatId) {
+          otherSessions.push(session);
+          return;
+        }
+
         const updatedMessages = [
           ...session.messages,
           userMessage
         ];
-        return {
+
+        updatedSession = {
           ...session,
           messages: updatedMessages,
           title:
@@ -237,8 +245,10 @@ function App() {
               ? getSessionTitle([userMessage])
               : session.title
         };
-      })
-    );
+      });
+
+      return updatedSession ? [updatedSession, ...otherSessions] : prev;
+    });
 
     const messages = apiMessages.map((msg) => ({
       role: msg.role === "bot" ? "assistant" : "user",
