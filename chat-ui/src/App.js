@@ -101,6 +101,13 @@ function App() {
     }
   };
 
+  const formatTimestamp = () =>
+    new Date().toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
+
   const renderMarkdownCode = ({ inline, className, children, ...props }) => {
     const isFenced = !inline;
     const codeText = String(children).replace(/\n$/, "");
@@ -220,7 +227,8 @@ function App() {
       streamIntervalRef.current = null;
     }
 
-    const userMessage = { role: "user", text: input };
+    const timestamp = formatTimestamp();
+    const userMessage = { role: "user", text: input, timestamp };
     const apiMessages = [...chatRef.current, userMessage];
     setSessions((prev) => {
       let updatedSession = null;
@@ -283,7 +291,7 @@ function App() {
         prev.map((session) => {
           if (session.id !== activeChatId) return session;
           const updated = [...session.messages];
-          updated.push({ role: "bot", text: "" });
+          updated.push({ role: "bot", text: "", timestamp: formatTimestamp() });
           return { ...session, messages: updated };
         })
       );
@@ -300,7 +308,9 @@ function App() {
           prev.map((session) => {
             if (session.id !== activeChatId) return session;
             const updated = [...session.messages];
+            const lastMessage = updated[updated.length - 1] || {};
             updated[updated.length - 1] = {
+              ...lastMessage,
               role: "bot",
               text: words.slice(0, index).join(" ")
             };
@@ -328,7 +338,7 @@ function App() {
         prev.map((session) => {
           if (session.id !== activeChatId) return session;
           const updated = [...session.messages];
-          updated.push({ role: "bot", text: "⚠️ Error occurred" });
+          updated.push({ role: "bot", text: "⚠️ Error occurred", timestamp: formatTimestamp() });
           return { ...session, messages: updated };
         })
       );
@@ -751,39 +761,58 @@ function App() {
                   }}
                 >
                   <div
-                    className="message-bubble"
                     style={{
-                      ...styles.messageBubble,
-                      backgroundColor:
-                        msg.role === "user"
-                          ? theme === "light"
-                            ? "#f4f4f4"
-                            : "#4a4d63"
-                          : theme === "light"
-                          ? stylesToUse.assistantBubble
-                          : "#444654",
-                      border:
-                        msg.role === "user"
-                          ? theme === "light"
-                            ? "1px solid #d9dce3"
-                            : "1px solid #5a5c73"
-                          : "none",
-                      color:
-                        msg.role === "user"
-                          ? theme === "light"
-                            ? "#0f1720"
-                            : "white"
-                          : theme === "light"
-                          ? stylesToUse.assistantText
-                          : "inherit"
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+                      gap: "6px"
                     }}
                   >
-                    {msg.role === "bot" ? (
-                      <ReactMarkdown components={{ code: renderMarkdownCode }}>
-                        {msg.text}
-                      </ReactMarkdown>
-                    ) : (
-                      msg.text
+                    <div
+                      className="message-bubble"
+                      style={{
+                        ...styles.messageBubble,
+                        backgroundColor:
+                          msg.role === "user"
+                            ? theme === "light"
+                              ? "#f4f4f4"
+                              : "#4a4d63"
+                            : theme === "light"
+                            ? stylesToUse.assistantBubble
+                            : "#444654",
+                        border:
+                          msg.role === "user"
+                            ? theme === "light"
+                              ? "1px solid #d9dce3"
+                              : "1px solid #5a5c73"
+                            : "none",
+                        color:
+                          msg.role === "user"
+                            ? theme === "light"
+                              ? "#0f1720"
+                              : "white"
+                            : theme === "light"
+                            ? stylesToUse.assistantText
+                            : "inherit"
+                      }}
+                    >
+                      {msg.role === "bot" ? (
+                        <ReactMarkdown components={{ code: renderMarkdownCode }}>
+                          {msg.text}
+                        </ReactMarkdown>
+                      ) : (
+                        msg.text
+                      )}
+                    </div>
+                    {msg.timestamp && (
+                      <div
+                        style={{
+                          ...styles.messageTimestamp,
+                          color: theme === "light" ? "#6b7280" : "#d1d5db"
+                        }}
+                      >
+                        {msg.timestamp}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1123,6 +1152,11 @@ const styles = {
     borderRadius: "12px",
     maxWidth: "70%",
     lineHeight: "1.5"
+  },
+  messageTimestamp: {
+    fontSize: "12px",
+    lineHeight: "1.3",
+    opacity: 0.8
   },
   codeBlockWrapper: {
     position: "relative",
