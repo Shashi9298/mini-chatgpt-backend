@@ -64,7 +64,8 @@ function App() {
   const [typingChatId, setTypingChatId] = useState(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem("mini_gpt_theme") || "dark");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
   const chatContainerRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -403,6 +404,21 @@ function App() {
     textareaRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
+
   // Persist theme selection
   useEffect(() => {
     try {
@@ -449,13 +465,45 @@ function App() {
   return (
     <div id="app-root" style={stylesToUse.app}>
       <style>{styleTag}</style>
-      
+
+      {isMobile && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 18px",
+            borderBottom: theme === "light" ? "1px solid #e6e9ee" : "1px solid #2a2b32",
+            backgroundColor: theme === "light" ? "#ffffff" : "#202123",
+            color: theme === "light" ? "#0f1720" : "white"
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Toggle sidebar"
+            style={styles.themeToggleBtn}
+          >
+            ☰
+          </button>
+          <button
+            type="button"
+            aria-label="Toggle theme"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            style={styles.themeToggleBtn}
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+        </div>
+      )}
+
       {/* Sidebar */}
       <div
+        className="sidebar"
         style={{
           ...stylesToUse.sidebar,
-          width: sidebarOpen ? 280 : 0,
-          minWidth: sidebarOpen ? "260px" : 0,
+          width: sidebarOpen ? "min(280px, 100%)" : 0,
+          minWidth: sidebarOpen ? "min(260px, 100%)" : 0,
           padding: sidebarOpen ? "20px" : 0,
           borderRight: sidebarOpen ? "1px solid #2a2b32" : "none",
           overflow: "hidden",
@@ -600,7 +648,7 @@ function App() {
       </div>
 
       {/* Main */}
-      <div style={styles.main}>
+      <div className="main-pane" style={styles.main}>
         {!sidebarOpen && (
           <button
             type="button"
@@ -631,6 +679,7 @@ function App() {
 
         {/* Chat */}
         <div
+          className="chat-area"
           ref={chatContainerRef}
           style={styles.chatArea}
           onScroll={handleChatScroll}
@@ -660,6 +709,7 @@ function App() {
                   }}
                 >
                   <div
+                    className="message-bubble"
                     style={{
                       ...styles.messageBubble,
                       backgroundColor:
@@ -704,6 +754,7 @@ function App() {
 
         {/* Input */}
         <div
+          className="input-wrapper"
           style={
             theme === "light"
               ? {
@@ -823,6 +874,7 @@ function App() {
               </button>
             )}
             <button
+              className="send-btn"
               onClick={sendMessage}
               disabled={loading}
               style={{
