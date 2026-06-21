@@ -516,26 +516,28 @@ function App() {
             <div style={stylesToUse.sidebarTitle}>MiniGPT</div>
             <div style={stylesToUse.sidebarSubtitle}>Conversational AI</div>
           </div>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto" }}>
-            <button
-              type="button"
-              aria-label="Toggle sidebar"
-              title="Toggle sidebar"
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              style={styles.themeToggleBtn}
-            >
-              ☰
-            </button>
-            <button
-              type="button"
-              aria-label="Toggle theme"
-              title="Toggle theme"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              style={styles.themeToggleBtn}
-            >
-              {theme === "light" ? "🌙" : "☀️"}
-            </button>
-          </div>
+          {!isMobile && (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", marginLeft: "auto" }}>
+              <button
+                type="button"
+                aria-label="Toggle sidebar"
+                title="Toggle sidebar"
+                onClick={() => setSidebarOpen((prev) => !prev)}
+                style={styles.themeToggleBtn}
+              >
+                ☰
+              </button>
+              <button
+                type="button"
+                aria-label="Toggle theme"
+                title="Toggle theme"
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                style={styles.themeToggleBtn}
+              >
+                {theme === "light" ? "🌙" : "☀️"}
+              </button>
+            </div>
+          )}
         </div>
 
         <button
@@ -578,6 +580,7 @@ function App() {
                 if (textareaRef.current) {
                   textareaRef.current.style.height = "24px";
                   textareaRef.current.focus();
+                  if (isMobile) setSidebarOpen(false);
                 }
               }}
               onKeyDown={(e) => {
@@ -588,6 +591,7 @@ function App() {
                   if (textareaRef.current) {
                     textareaRef.current.style.height = "24px";
                     textareaRef.current.focus();
+                    if (isMobile) setSidebarOpen(false);
                   }
                 }
               }}
@@ -647,9 +651,24 @@ function App() {
         </div>
       </div>
 
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.3)",
+            zIndex: 900
+          }}
+        />
+      )}
+
       {/* Main */}
       <div className="main-pane" style={styles.main}>
-        {!sidebarOpen && (
+        {!sidebarOpen && !isMobile && (
           <button
             type="button"
             aria-label="Open sidebar"
