@@ -561,16 +561,34 @@ function App() {
       {/* Sidebar */}
       <div
         className="sidebar"
-        style={{
-          ...stylesToUse.sidebar,
-          zIndex: 1001,
-          width: sidebarOpen ? "min(280px, 100%)" : 0,
-          minWidth: sidebarOpen ? "min(260px, 100%)" : 0,
-          padding: sidebarOpen ? "20px" : 0,
-          borderRight: sidebarOpen ? "1px solid #2a2b32" : "none",
-          overflow: "hidden",
-          transition: "width 0.25s ease, padding 0.25s ease, border-right 0.25s ease"
-        }}
+        style={
+          isMobile
+            ? {
+                ...stylesToUse.sidebar,
+                zIndex: 1001,
+                position: "fixed",
+                top: 0,
+                left: 0,
+                height: "100vh",
+                width: "min(280px, 100%)",
+                minWidth: "min(260px, 100%)",
+                padding: "20px",
+                borderRight: "1px solid #2a2b32",
+                overflow: "hidden",
+                transition: "transform 0.25s ease",
+                transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)"
+              }
+            : {
+                ...stylesToUse.sidebar,
+                zIndex: 1001,
+                width: sidebarOpen ? "min(280px, 100%)" : 0,
+                minWidth: sidebarOpen ? "min(260px, 100%)" : 0,
+                padding: sidebarOpen ? "20px" : 0,
+                borderRight: sidebarOpen ? "1px solid #2a2b32" : "none",
+                overflow: "hidden",
+                transition: "width 0.25s ease, padding 0.25s ease, border-right 0.25s ease"
+              }
+        }
       >
         <div style={stylesToUse.sidebarHeader}>
           <div style={stylesToUse.logoCircle}>AI</div>
