@@ -497,6 +497,23 @@ function App() {
     boxShadow: "0 4px 12px rgba(16, 163, 127, 0.25)"
   };
 
+  const handleNewChat = () => {
+    if (streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current);
+      streamIntervalRef.current = null;
+    }
+    setTypingChatId(null);
+    const session = createSession();
+    setSessions((prev) => [...prev, session]);
+    setActiveChatId(session.id);
+    chatRef.current = [];
+    shouldAutoScrollRef.current = true;
+    setInput("");
+    setLoading(false);
+    textareaRef.current?.focus();
+    if (isMobile) setSidebarOpen(false);
+  };
+
   return (
     <div id="app-root" style={stylesToUse.app}>
       <style>{styleTag}</style>
@@ -573,22 +590,7 @@ function App() {
               ? { ...styles.newChatBtn, backgroundColor: "#ffffff", border: "1px solid #e6e9ee", color: "#0f1720" }
               : styles.newChatBtn
           }
-          onClick={() => {
-            if (streamIntervalRef.current) {
-              clearInterval(streamIntervalRef.current);
-              streamIntervalRef.current = null;
-            }
-            setTypingChatId(null);
-            const session = createSession();
-            setSessions((prev) => [...prev, session]);
-            setActiveChatId(session.id);
-            chatRef.current = [];
-            shouldAutoScrollRef.current = true;
-            setInput("");
-            setLoading(false);
-            textareaRef.current?.focus();
-            if (isMobile) setSidebarOpen(false);
-          }}
+          onClick={handleNewChat}
         >
           + New Chat
         </button>
@@ -755,6 +757,21 @@ function App() {
               }}
             >
               {theme === "light" ? "🌙" : "☀️"}
+            </button>
+            <button
+              type="button"
+              aria-label="New chat"
+              title="New chat"
+              onClick={handleNewChat}
+              style={{
+                ...mobileCircleBtnStyle,
+                position: "fixed",
+                left: "16px",
+                bottom: "96px",
+                zIndex: 1002
+              }}
+            >
+              +
             </button>
           </>
         )}
