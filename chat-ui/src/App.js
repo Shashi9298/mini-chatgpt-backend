@@ -75,6 +75,7 @@ function App() {
   const chatRef = useRef([]);
   const shouldAutoScrollRef = useRef(true);
   const copyTimeoutRef = useRef(null);
+  const touchStartRef = useRef(null);
 
   const scrollToBottom = () => {
     const chatElement = chatContainerRef.current;
@@ -497,6 +498,40 @@ function App() {
     boxShadow: "0 4px 12px rgba(16, 163, 127, 0.25)"
   };
 
+  const handleTouchStart = (event) => {
+    const touch = event.changedTouches?.[0] || event.touches?.[0];
+    if (!touch) return;
+
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY
+    };
+  };
+
+  const handleTouchEnd = (event) => {
+    const touch = event.changedTouches?.[0];
+    if (!touch || !touchStartRef.current) return;
+
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+
+    if (Math.abs(deltaX) < 60 || Math.abs(deltaX) <= Math.abs(deltaY)) {
+      touchStartRef.current = null;
+      return;
+    }
+
+    if (isMobile && !loading) {
+      if (!sidebarOpen && deltaX > 0) {
+        setSidebarOpen(true);
+      }
+      if (sidebarOpen && deltaX < 0) {
+        setSidebarOpen(false);
+      }
+    }
+
+    touchStartRef.current = null;
+  };
+
   const handleNewChat = () => {
     if (streamIntervalRef.current) {
       clearInterval(streamIntervalRef.current);
@@ -515,7 +550,12 @@ function App() {
   };
 
   return (
-    <div id="app-root" style={stylesToUse.app}>
+    <div
+      id="app-root"
+      style={stylesToUse.app}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <style>{styleTag}</style>
 
       {/* Sidebar */}
@@ -771,7 +811,7 @@ function App() {
                 zIndex: 1002
               }}
             >
-              +
+              <span style={{ fontSize: "24px", fontWeight: "600", lineHeight: 1 }}>+</span>
             </button>
           </>
         )}
