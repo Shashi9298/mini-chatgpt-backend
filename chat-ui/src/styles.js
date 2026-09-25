@@ -211,12 +211,12 @@ const styles = {
       },
       hr: { border: 0, borderTop: "1px solid #5a5c73", margin: "18px 0" },
       tableWrapper: { maxWidth: "100%", overflowX: "auto", margin: "12px 0" },
-      table: { minWidth: "480px", width: "100%", borderCollapse: "collapse", textAlign: "left" },
+      table: { minWidth: "480px", width: "100%", border: "1px solid #5a5c73", borderCollapse: "collapse", textAlign: "left" },
       thead: { backgroundColor: "#343541" },
       tbody: {},
       tr: { borderBottom: "1px solid #5a5c73" },
-      th: { padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap" },
-      td: { padding: "8px 10px", verticalAlign: "top", overflowWrap: "anywhere" }
+      th: { padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap", borderLeft: "1px solid #5a5c73", borderBottom: "1px solid #8b93a7" },
+      td: { padding: "8px 10px", verticalAlign: "top", overflowWrap: "anywhere", borderLeft: "1px solid #5a5c73" }
     },
     light: {
       h1: { fontSize: "1.7em", lineHeight: 1.25, margin: "0 0 14px" },
@@ -236,12 +236,12 @@ const styles = {
       },
       hr: { border: 0, borderTop: "1px solid #d9dce3", margin: "18px 0" },
       tableWrapper: { maxWidth: "100%", overflowX: "auto", margin: "12px 0" },
-      table: { minWidth: "480px", width: "100%", borderCollapse: "collapse", textAlign: "left" },
+      table: { minWidth: "480px", width: "100%", border: "1px solid #d9dce3", borderCollapse: "collapse", textAlign: "left" },
       thead: { backgroundColor: "#eef0f3" },
       tbody: {},
       tr: { borderBottom: "1px solid #d9dce3" },
-      th: { padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap" },
-      td: { padding: "8px 10px", verticalAlign: "top", overflowWrap: "anywhere" }
+      th: { padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap", borderLeft: "1px solid #d9dce3", borderBottom: "1px solid #b8bec8" },
+      td: { padding: "8px 10px", verticalAlign: "top", overflowWrap: "anywhere", borderLeft: "1px solid #d9dce3" }
     }
   },
   codeBlockWrapper: {
