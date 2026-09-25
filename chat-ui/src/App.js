@@ -113,8 +113,8 @@ function App() {
       hour12: true
     });
 
-  const renderMarkdownCode = ({ inline, className, children, ...props }) => {
-    const isFenced = Boolean(className) || String(children).endsWith("\n");
+  const renderMarkdownCode = ({ className, children, node, ...props }) => {
+    const isFenced = Boolean(node?.properties?.className) || node?.children?.[0]?.value?.endsWith("\n");
     const codeText = String(children).replace(/\n$/, "");
     // Use the code text as a stable identifier so re-renders keep the same id
     const codeBlockId = codeText;
