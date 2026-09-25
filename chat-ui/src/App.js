@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import styles from "./styles";
 
 function App() {
@@ -903,7 +904,10 @@ function App() {
                       }}
                     >
                       {msg.role === "bot" ? (
-                        <ReactMarkdown components={{ code: renderMarkdownCode }}>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{ code: renderMarkdownCode }}
+                        >
                           {msg.text}
                         </ReactMarkdown>
                       ) : (
