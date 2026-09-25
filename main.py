@@ -44,14 +44,27 @@ def chat(req: ChatRequest):
     try:
         print("Incoming messages:", req.messages)
 
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "Behave as a normal conversational assistant. "
+                    "Return plain text or Markdown. "
+                    "Do not return JSON unless the user explicitly requests it."
+                ),
+            },
+            *[msg.model_dump() for msg in req.messages],
+        ]
+
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[msg.model_dump() for msg in req.messages],
+            model="openai/gpt-oss-120b",
+            messages=messages,
+            include_reasoning=False,
         )
 
         print("API response:", response)
 
-        return {"reply": response}
+        return {"reply": response.model_dump()}
 
     except Exception as e:
         print("ERROR:", str(e))
