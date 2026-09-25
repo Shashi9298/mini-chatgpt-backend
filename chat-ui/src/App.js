@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import styles from "./styles";
+import "./markdown.css";
 
 function App() {
   const createSession = (title = "New Chat", messages = []) => ({
@@ -113,7 +114,7 @@ function App() {
     });
 
   const renderMarkdownCode = ({ inline, className, children, ...props }) => {
-    const isFenced = !inline;
+    const isFenced = Boolean(className) || String(children).endsWith("\n");
     const codeText = String(children).replace(/\n$/, "");
     // Use the code text as a stable identifier so re-renders keep the same id
     const codeBlockId = codeText;
@@ -499,6 +500,8 @@ function App() {
     justifyContent: "center",
     boxShadow: "0 4px 12px rgba(16, 163, 127, 0.25)"
   };
+
+  const markdownStyles = styles.markdown[theme === "light" ? "light" : "dark"];
 
   const handleTouchStart = (event) => {
     const touch = event.changedTouches?.[0] || event.touches?.[0];
@@ -904,12 +907,38 @@ function App() {
                       }}
                     >
                       {msg.role === "bot" ? (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{ code: renderMarkdownCode }}
-                        >
-                          {msg.text}
-                        </ReactMarkdown>
+                        <div className="markdown-content">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              h1: ({ children, ...props }) => <h1 {...props} style={markdownStyles.h1}>{children}</h1>,
+                              h2: ({ children, ...props }) => <h2 {...props} style={markdownStyles.h2}>{children}</h2>,
+                              h3: ({ children, ...props }) => <h3 {...props} style={markdownStyles.h3}>{children}</h3>,
+                              h4: ({ children, ...props }) => <h4 {...props} style={markdownStyles.h4}>{children}</h4>,
+                              h5: ({ children, ...props }) => <h5 {...props} style={markdownStyles.h5}>{children}</h5>,
+                              h6: ({ children, ...props }) => <h6 {...props} style={markdownStyles.h6}>{children}</h6>,
+                              p: ({ children, ...props }) => <p {...props} style={markdownStyles.p}>{children}</p>,
+                              ul: ({ children, ...props }) => <ul {...props} style={markdownStyles.list}>{children}</ul>,
+                              ol: ({ children, ...props }) => <ol {...props} style={markdownStyles.list}>{children}</ol>,
+                              li: ({ children, ...props }) => <li {...props} style={markdownStyles.li}>{children}</li>,
+                              blockquote: ({ children, ...props }) => <blockquote {...props} style={markdownStyles.blockquote}>{children}</blockquote>,
+                              hr: (props) => <hr {...props} style={markdownStyles.hr} />,
+                              table: ({ children, ...props }) => (
+                                <div style={markdownStyles.tableWrapper}>
+                                  <table {...props} style={markdownStyles.table}>{children}</table>
+                                </div>
+                              ),
+                              thead: ({ children, ...props }) => <thead {...props} style={markdownStyles.thead}>{children}</thead>,
+                              tbody: ({ children, ...props }) => <tbody {...props} style={markdownStyles.tbody}>{children}</tbody>,
+                              tr: ({ children, ...props }) => <tr {...props} style={markdownStyles.tr}>{children}</tr>,
+                              th: ({ children, ...props }) => <th {...props} style={markdownStyles.th}>{children}</th>,
+                              td: ({ children, ...props }) => <td {...props} style={markdownStyles.td}>{children}</td>,
+                              code: renderMarkdownCode
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                        </div>
                       ) : (
                         msg.text
                       )}

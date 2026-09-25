@@ -192,6 +192,58 @@ const styles = {
     lineHeight: "1.3",
     opacity: 0.8
   },
+  markdown: {
+    dark: {
+      h1: { fontSize: "1.7em", lineHeight: 1.25, margin: "0 0 14px" },
+      h2: { fontSize: "1.45em", lineHeight: 1.3, margin: "18px 0 10px" },
+      h3: { fontSize: "1.25em", lineHeight: 1.35, margin: "16px 0 8px" },
+      h4: { fontSize: "1.1em", lineHeight: 1.4, margin: "14px 0 6px" },
+      h5: { fontSize: "1em", lineHeight: 1.4, margin: "12px 0 6px" },
+      h6: { fontSize: "0.9em", lineHeight: 1.4, margin: "12px 0 6px" },
+      p: { margin: "0 0 12px" },
+      list: { margin: "0 0 12px", paddingLeft: "24px" },
+      li: { marginBottom: "4px" },
+      blockquote: {
+        margin: "12px 0",
+        padding: "4px 16px",
+        borderLeft: "3px solid #8b93a7",
+        color: "#d1d5db"
+      },
+      hr: { border: 0, borderTop: "1px solid #5a5c73", margin: "18px 0" },
+      tableWrapper: { maxWidth: "100%", overflowX: "auto", margin: "12px 0" },
+      table: { minWidth: "480px", width: "100%", borderCollapse: "collapse", textAlign: "left" },
+      thead: { backgroundColor: "#343541" },
+      tbody: {},
+      tr: { borderBottom: "1px solid #5a5c73" },
+      th: { padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap" },
+      td: { padding: "8px 10px", verticalAlign: "top", overflowWrap: "anywhere" }
+    },
+    light: {
+      h1: { fontSize: "1.7em", lineHeight: 1.25, margin: "0 0 14px" },
+      h2: { fontSize: "1.45em", lineHeight: 1.3, margin: "18px 0 10px" },
+      h3: { fontSize: "1.25em", lineHeight: 1.35, margin: "16px 0 8px" },
+      h4: { fontSize: "1.1em", lineHeight: 1.4, margin: "14px 0 6px" },
+      h5: { fontSize: "1em", lineHeight: 1.4, margin: "12px 0 6px" },
+      h6: { fontSize: "0.9em", lineHeight: 1.4, margin: "12px 0 6px" },
+      p: { margin: "0 0 12px" },
+      list: { margin: "0 0 12px", paddingLeft: "24px" },
+      li: { marginBottom: "4px" },
+      blockquote: {
+        margin: "12px 0",
+        padding: "4px 16px",
+        borderLeft: "3px solid #9ca3af",
+        color: "#4b5563"
+      },
+      hr: { border: 0, borderTop: "1px solid #d9dce3", margin: "18px 0" },
+      tableWrapper: { maxWidth: "100%", overflowX: "auto", margin: "12px 0" },
+      table: { minWidth: "480px", width: "100%", borderCollapse: "collapse", textAlign: "left" },
+      thead: { backgroundColor: "#eef0f3" },
+      tbody: {},
+      tr: { borderBottom: "1px solid #d9dce3" },
+      th: { padding: "8px 10px", fontWeight: 700, whiteSpace: "nowrap" },
+      td: { padding: "8px 10px", verticalAlign: "top", overflowWrap: "anywhere" }
+    }
+  },
   codeBlockWrapper: {
     position: "relative",
     marginTop: "12px"

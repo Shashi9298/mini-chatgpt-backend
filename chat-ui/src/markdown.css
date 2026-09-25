@@ -1,0 +1,16 @@
+.markdown-content code:not(pre code) {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #2f313d;
+  color: #f3f4f6;
+  font-size: 0.9em;
+}
+
+.markdown-content-light code:not(pre code) {
+  background: #e9edf2;
+  color: #0f1720;
+}
+
+.markdown-content > :last-child {
+  margin-bottom: 0;
+}
